@@ -1,4 +1,4 @@
-stasm4-upstream
-===============
+stasm4
+======
 
-Original sources for STASM library for finding features in faces.
+Fork of STASM face landmarking software, customized for Linux.

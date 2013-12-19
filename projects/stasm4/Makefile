@@ -72,11 +72,20 @@ STLIBNAME := libstasm4.a
 .build-post: .build-impl ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}
 # Add your post 'build' code here...
 
+# Object Directory
+STLIB_BUILD_OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}: ${OBJECTFILES}
+# Object Files
+STLIB_BUILD_OBJECTFILES=$(shell find ${STLIB_BUILD_OBJECTDIR} -type f -name "*.o")
+
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}: ${STLIB_BUILD_OBJECTFILES}
+	@echo "building static library from object files used to build shared library"
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}
-	${AR} -rv ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME} ${OBJECTFILES} 
+	echo "archiving object files into ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}"
+#	echo "executing ${AR} -rv ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME} ${STLIB_BUILD_OBJECTFILES}"
+	${AR} -rv ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME} ${STLIB_BUILD_OBJECTFILES} 
+	@echo "executing ranlib..."
 	$(RANLIB) ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}
 
 # clean

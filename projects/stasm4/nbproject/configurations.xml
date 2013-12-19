@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="90">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <logicalFolder name="stasm" displayName="stasm" projectFiles="true">
+        <logicalFolder name="MOD_1" displayName="MOD_1" projectFiles="true">
+          <itemPath>../../stasm/MOD_1/facedet.h</itemPath>
+          <itemPath>../../stasm/MOD_1/initasm.h</itemPath>
+          <itemPath>../../stasm/MOD_1/yaw00.h</itemPath>
+        </logicalFolder>
+        <itemPath>../../stasm/asm.h</itemPath>
+        <itemPath>../../stasm/basedesc.h</itemPath>
+        <itemPath>../../stasm/classicdesc.h</itemPath>
+        <itemPath>../../stasm/convshape.h</itemPath>
+        <itemPath>../../stasm/err.h</itemPath>
+        <itemPath>../../stasm/eyedet.h</itemPath>
+        <itemPath>../../stasm/eyedist.h</itemPath>
+        <itemPath>../../stasm/faceroi.h</itemPath>
+        <itemPath>../../stasm/hat.h</itemPath>
+        <itemPath>../../stasm/hatdesc.h</itemPath>
+        <itemPath>../../stasm/landmarks.h</itemPath>
+        <itemPath>../../stasm/misc.h</itemPath>
+        <itemPath>../../stasm/pinstart.h</itemPath>
+        <itemPath>../../stasm/print.h</itemPath>
+        <itemPath>../../stasm/shape17.h</itemPath>
+        <itemPath>../../stasm/shapehacks.h</itemPath>
+        <itemPath>../../stasm/shapemod.h</itemPath>
+        <itemPath>../../stasm/startshape.h</itemPath>
+        <itemPath>../../stasm/stasm.h</itemPath>
+        <itemPath>../../stasm/stasm_constants.h</itemPath>
+        <itemPath>../../stasm/stasm_landmarks.h</itemPath>
+        <itemPath>../../stasm/stasm_lib.h</itemPath>
+        <itemPath>../../stasm/stasm_lib_ext.h</itemPath>
+      </logicalFolder>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <logicalFolder name="stasm" displayName="stasm" projectFiles="true">
+        <logicalFolder name="MOD_1" displayName="MOD_1" projectFiles="true">
+          <itemPath>../../stasm/MOD_1/facedet.cpp</itemPath>
+          <itemPath>../../stasm/MOD_1/initasm.cpp</itemPath>
+        </logicalFolder>
+        <itemPath>../../stasm/asm.cpp</itemPath>
+        <itemPath>../../stasm/classicdesc.cpp</itemPath>
+        <itemPath>../../stasm/convshape.cpp</itemPath>
+        <itemPath>../../stasm/err.cpp</itemPath>
+        <itemPath>../../stasm/eyedet.cpp</itemPath>
+        <itemPath>../../stasm/eyedist.cpp</itemPath>
+        <itemPath>../../stasm/faceroi.cpp</itemPath>
+        <itemPath>../../stasm/hat.cpp</itemPath>
+        <itemPath>../../stasm/hatdesc.cpp</itemPath>
+        <itemPath>../../stasm/landmarks.cpp</itemPath>
+        <itemPath>../../stasm/misc.cpp</itemPath>
+        <itemPath>../../stasm/pinstart.cpp</itemPath>
+        <itemPath>../../stasm/print.cpp</itemPath>
+        <itemPath>../../stasm/shape17.cpp</itemPath>
+        <itemPath>../../stasm/shapehacks.cpp</itemPath>
+        <itemPath>../../stasm/shapemod.cpp</itemPath>
+        <itemPath>../../stasm/startshape.cpp</itemPath>
+        <itemPath>../../stasm/stasm.cpp</itemPath>
+        <itemPath>../../stasm/stasm_lib.cpp</itemPath>
+      </logicalFolder>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+      <logicalFolder name="f1"
+                     displayName="landmarks_default"
+                     projectFiles="true"
+                     kind="TEST">
+        <itemPath>tests/DefaultLandmarksTest.cc</itemPath>
+        <itemPath>tests/DefaultLandmarksTest.h</itemPath>
+        <itemPath>tests/landmarks_default_test_runner.cc</itemPath>
+      </logicalFolder>
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceRootList>
+    <Elem>../../stasm</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="2">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerLibLibItem>opencv_core</linkerLibLibItem>
+            <linkerLibLibItem>opencv_highgui</linkerLibLibItem>
+            <linkerLibLibItem>opencv_imgproc</linkerLibLibItem>
+            <linkerLibLibItem>opencv_objdetect</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="../../stasm/MOD_1/facedet.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/MOD_1/facedet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/MOD_1/initasm.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/MOD_1/initasm.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/MOD_1/yaw00.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/asm.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/asm.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/basedesc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/classicdesc.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/classicdesc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/convshape.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/convshape.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/err.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/err.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/eyedet.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/eyedet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/eyedist.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/eyedist.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/faceroi.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/faceroi.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/hat.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/hat.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/hatdesc.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/hatdesc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/landmarks.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/landmarks.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/misc.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/misc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/pinstart.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/pinstart.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/print.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/print.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/shape17.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/shape17.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/shapehacks.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/shapehacks.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/shapemod.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/shapemod.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/startshape.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/startshape.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm_constants.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm_landmarks.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm_lib.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm_lib.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm_lib_ext.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <folder path="TestFiles/f1">
+        <cTool>
+          <commandLine>`cppunit-config --cflags`</commandLine>
+        </cTool>
+        <ccTool>
+          <commandLine>`cppunit-config --cflags`</commandLine>
+        </ccTool>
+        <linkerTool>
+          <output>${TESTDIR}/TestFiles/f1</output>
+          <linkerLibItems>
+            <linkerOptionItem>`cppunit-config --libs`</linkerOptionItem>
+          </linkerLibItems>
+        </linkerTool>
+      </folder>
+      <item path="tests/DefaultLandmarksTest.cc" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="tests/DefaultLandmarksTest.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tests/landmarks_default_test_runner.cc"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="2">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerLibLibItem>opencv_core</linkerLibLibItem>
+            <linkerLibLibItem>opencv_highgui</linkerLibLibItem>
+            <linkerLibLibItem>opencv_imgproc</linkerLibLibItem>
+            <linkerLibLibItem>opencv_objdetect</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="../../stasm/MOD_1/facedet.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/MOD_1/facedet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/MOD_1/initasm.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/MOD_1/initasm.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/MOD_1/yaw00.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/asm.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/asm.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/basedesc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/classicdesc.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/classicdesc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/convshape.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/convshape.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/err.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/err.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/eyedet.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/eyedet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/eyedist.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/eyedist.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/faceroi.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/faceroi.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/hat.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/hat.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/hatdesc.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/hatdesc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/landmarks.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/landmarks.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/misc.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/misc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/pinstart.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/pinstart.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/print.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/print.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/shape17.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/shape17.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/shapehacks.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/shapehacks.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/shapemod.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/shapemod.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/startshape.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/startshape.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm_constants.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm_landmarks.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm_lib.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm_lib.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../stasm/stasm_lib_ext.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <folder path="TestFiles/f1">
+        <cTool>
+          <commandLine>`cppunit-config --cflags`</commandLine>
+        </cTool>
+        <ccTool>
+          <commandLine>`cppunit-config --cflags`</commandLine>
+        </ccTool>
+        <linkerTool>
+          <output>${TESTDIR}/TestFiles/f1</output>
+          <linkerLibItems>
+            <linkerOptionItem>`cppunit-config --libs`</linkerOptionItem>
+          </linkerLibItems>
+        </linkerTool>
+      </folder>
+      <item path="tests/DefaultLandmarksTest.cc" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="tests/DefaultLandmarksTest.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tests/landmarks_default_test_runner.cc"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

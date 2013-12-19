@@ -9,7 +9,7 @@ include $(PROJ_ROOT)/nbproject/Makefile-variables.mk
 INSTALL := $(shell which install)
 MKDIR := mkdir
 RM := rm
-HEADERS_DEST_DIR := $(DESTDIR)/usr/include
+HEADERS_DEST_DIR := $(DESTDIR)/usr/include/stasm4
 HERE := $(CURDIR)
 
 all: build

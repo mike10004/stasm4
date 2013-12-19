@@ -59,6 +59,11 @@
 //
 //-----------------------------------------------------------------------------
 
+/**
+ * 2013-12-19 Modifications (c) 2013 Michael Chaberski, released under same
+ *            license as original STASM.
+ */
+
 #ifndef STASM_LIB_H
 #define STASM_LIB_H
 

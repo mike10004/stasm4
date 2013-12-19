@@ -5,6 +5,10 @@
 #ifndef STASM_SHAPEMODEL_H
 #define STASM_SHAPEMODEL_H
 
+#include "stasm_lib.h"
+#include "shapehacks.h"
+#include "stasm_constants.h"
+
 namespace stasm
 {
 class ShapeMod

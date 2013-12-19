@@ -5,12 +5,14 @@
 #ifndef STASM_FACEDET_H
 #define STASM_FACEDET_H
 
+#include <opencv2/objdetect/objdetect.hpp>
+
 namespace stasm
 {
 class FaceDet
 {
 public:
-    void OpenFaceDetector_( // called by stasm_init, init face det from XML file
+    void OpenFaceDetector_(cv::CascadeClassifier& facedet_g, // called by stasm_init, init face det from XML file
         const char* datadir,      // in: directory of face detector files
         void*       detparams);   // in: unused (func signature compatibility)
 
@@ -24,7 +26,7 @@ public:
     // implementation were to initialize detpar.rot, StartShapeAndRoi1 would
     // use it (instead of estimating it from the eye angle).
 
-    void DetectFaces_(            // call once per image to find all the faces
+    void DetectFaces_(cv::CascadeClassifier& facedet_g,            // call once per image to find all the faces
         const Image& img,         // in: the image (grayscale)
         const char*  imgpath,     // in: unused (match virt func signature)
         bool         multiface,   // in: if false, want only the best face

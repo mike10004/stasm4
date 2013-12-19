@@ -3,19 +3,21 @@
 // Copyright (C) 2005-2013, Stephen Milborrow
 
 #include "../stasm.h"
+#include <opencv2/imgproc/imgproc.hpp>
+#include <algorithm>
 
 namespace stasm
 {
 typedef vector<DetPar> vec_DetPar;
 
-static cv::CascadeClassifier facedet_g;  // the face detector
+//static cv::CascadeClassifier facedet_g;  // the face detector
 
 static double BORDER_FRAC = 0.1; // fraction of image width or height
                                  // use 0.0 for no border
 
 //-----------------------------------------------------------------------------
 
-void FaceDet::OpenFaceDetector_( // called by stasm_init, init face det from XML file
+void FaceDet::OpenFaceDetector_(cv::CascadeClassifier& facedet_g, // called by stasm_init, init face det from XML file
     const char* datadir,         // in: directory of face detector files
     void*)                       // in: unused (func signature compatibility)
 {
@@ -34,13 +36,13 @@ static Image EnborderImg(    // return the image with a border
     Image bordered_img(img);
     leftborder = cvRound(BORDER_FRAC * bordered_img.cols);
     topborder  = cvRound(BORDER_FRAC * bordered_img.rows);
-    copyMakeBorder(bordered_img, bordered_img,
+    cv::copyMakeBorder(bordered_img, bordered_img,
                    topborder, topborder, leftborder, leftborder,
                    cv::BORDER_REPLICATE);
     return bordered_img;
 }
 
-void DetectFaces(          // all face rects into detpars
+void DetectFaces(cv::CascadeClassifier& facedet_g,          // all face rects into detpars
     vec_DetPar&  detpars,  // out
     const Image& img,      // in
     int          minwidth) // in: as percent of img width
@@ -121,7 +123,7 @@ static void DiscardMissizedFaces(
     if (NSIZE(detpars) >= 3) // need at least 3 faces
     {
         // sort the faces on their width (smallest first) so can get median width
-        sort(detpars.begin(), detpars.end(), DecreasingWidth);
+        std::sort(detpars.begin(), detpars.end(), DecreasingWidth);
         const int median     = cvRound(detpars[NSIZE(detpars) / 2].width);
         const int minallowed = cvRound(median / MIN_WIDTH);
         const int maxallowed = cvRound(MAX_WIDTH * median);
@@ -166,7 +168,7 @@ static void TraceFaces(         // write image showing detected face rects
 #endif
 }
 
-void FaceDet::DetectFaces_(  // call once per image to find all the faces
+void FaceDet::DetectFaces_(cv::CascadeClassifier& facedet_g,  // call once per image to find all the faces
     const Image& img,        // in: the image (grayscale)
     const char*,             // in: unused (match virt func signature)
     bool         multiface,  // in: if false, want only the best face
@@ -175,19 +177,19 @@ void FaceDet::DetectFaces_(  // call once per image to find all the faces
 {
     CV_Assert(user == NULL);
     CV_Assert(!facedet_g.empty()); // check that OpenFaceDetector_ was called
-    DetectFaces(detpars_, img, minwidth);
+    DetectFaces(facedet_g, detpars_, img, minwidth);
     TraceFaces(detpars_, img, "facedet_BeforeDiscardMissizedFaces.bmp");
     DiscardMissizedFaces(detpars_);
     TraceFaces(detpars_, img, "facedet_AfterDiscardMissizedFaces.bmp");
     if (multiface) // order faces on increasing distance from left margin
     {
-        sort(detpars_.begin(), detpars_.end(), IncreasingLeftMargin);
+        std::sort(detpars_.begin(), detpars_.end(), IncreasingLeftMargin);
         TraceFaces(detpars_, img, "facedet.bmp");
     }
     else
     {
         // order faces on decreasing width, keep only the first (the largest face)
-        sort(detpars_.begin(), detpars_.end(), DecreasingWidth);
+        std::sort(detpars_.begin(), detpars_.end(), DecreasingWidth);
         TraceFaces(detpars_, img, "facedet.bmp");
         if (NSIZE(detpars_))
             detpars_.resize(1);

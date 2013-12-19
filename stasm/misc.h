@@ -5,6 +5,9 @@
 #ifndef STASM_MISC_H
 #define STASM_MISC_H
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/objdetect/objdetect.hpp>
+
 namespace stasm
 {
 using cv::Rect;

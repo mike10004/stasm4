@@ -3,6 +3,7 @@
 // Copyright (C) 2005-2013, Stephen Milborrow
 
 #include "stasm.h"
+#include <opencv2/imgproc/imgproc.hpp>
 
 namespace stasm
 {
@@ -89,7 +90,7 @@ static DetPar ImgDetParToRoiFrame(
     if (Valid(detpar.rot) && detpar.rot)
     {
         // rotate eyes and mouth
-        const MAT rotmat = getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
+        const MAT rotmat = cv::getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
                                                float(detpar_roi.y)),
                                                -detpar.rot, 1.);
         AlignShapeInPlace(eyemouth_shape, rotmat);
@@ -127,7 +128,7 @@ Shape ImgShapeToRoiFrame(     // return shape in ROI frame
 
     if (Valid(detpar.rot) && detpar.rot)
     {
-        const MAT rotmat = getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
+        const MAT rotmat = cv::getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
                                                float(detpar_roi.y)),
                                                -detpar.rot,
                                                1.);
@@ -151,7 +152,7 @@ Shape RoiShapeToImgFrame(     // return shape in image frame
         outshape = FlipShape(outshape, face_roi.cols);
     if (Valid(detpar.rot) && detpar.rot)
     {
-        const MAT rotmat = getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
+        const MAT rotmat = cv::getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
                                                float(detpar_roi.y)),
                                                detpar.rot, 1.);
         outshape = AlignShape(outshape, rotmat);
@@ -197,8 +198,8 @@ void FaceRoiAndDetPar(        // get ROI around the face, rotate if necessary
         face_roi = Image(img, rect_roi);
 
     else // rotate image so face is upright, results go into face_roi
-        warpAffine(Image(img, rect_roi), face_roi,
-                   getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
+        cv::warpAffine(Image(img, rect_roi), face_roi,
+                   cv::getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
                                                    float(detpar_roi.y)),
                                        -detpar.rot, 1.),
                    cv::Size(face_roi.cols, face_roi.rows),

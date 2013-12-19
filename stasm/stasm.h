@@ -30,7 +30,7 @@ static const char* const STASM_VERSION = "4.0.0"
 #pragma warning(disable:4267)
 #endif
 
-#include "opencv/cv.h"
+#include <opencv2/core/core.hpp>
 
 #if _MSC_VER >= 1200
 #pragma warning(default:4996) // re-enable the warnings disabled above
@@ -38,7 +38,7 @@ static const char* const STASM_VERSION = "4.0.0"
 #endif
 
 #if TRACE_IMAGES              // will be 0 unless debugging
-#include "opencv/highgui.h"   // need imwrite
+#include <opencv2/highgui/highgui.hpp>   // need imwrite
 #endif
 
 #include <stdio.h>
@@ -71,8 +71,8 @@ static const char* const STASM_VERSION = "4.0.0"
 #include "asm.h"
 
 #if MOD_1   // released version of Stasm
-    #include "../stasm/MOD_1/facedet.h"
-    #include "../stasm/MOD_1/initasm.h"
+    #include "MOD_1/facedet.h"
+    #include "MOD_1/initasm.h"
 #elif MOD_3 // experimental versions
     #include "../stasm/MOD_3/facedet.h"
     #include "../stasm/MOD_3/initasm.h"

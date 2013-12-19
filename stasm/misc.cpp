@@ -4,6 +4,7 @@
 
 #include "stasm.h"
 #include <sys/stat.h>
+#include <opencv2/core/core_c.h>
 
 namespace stasm
 {

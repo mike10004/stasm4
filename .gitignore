@@ -14,3 +14,5 @@
 /projects/stasm4/build/
 /projects/stasm4/dist/
 private/
+/.dep.inc
+

@@ -5,6 +5,8 @@
 #ifndef STASM_LANDMARKS_H
 #define STASM_LANDMARKS_H
 
+#include "stasm_constants.h"
+
 namespace stasm
 {
 struct LANDMARK_INFO  // landmark information

@@ -9,7 +9,7 @@ namespace stasm
 {
 // get the start shape for the next face in the image, and the ROI around it
 
-bool NextStartShapeAndRoi(     // use face detector results to estimate start shape
+bool NextStartShapeAndRoi(StasmData& detectors,     // use face detector results to estimate start shape
     Shape&         startshape, // out: the start shape we are looking for
     Image&         face_roi,   // out: ROI around face, possibly rotated upright
     DetPar&        detpar_roi, // out: detpar wrt to face_roi

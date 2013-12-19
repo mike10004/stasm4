@@ -363,7 +363,7 @@ static double EstRotFromEyeAngle( // estimate face rotation from intereye angle
 // (Note also that the ROI is flipped if necessary because our three-quarter
 // models are right facing and the face may be left facing.)
 
-static void StartShapeAndRoi(  // we have the facerect, now get the rest
+static void StartShapeAndRoi(StasmData& detectors,  // we have the facerect, now get the rest
     Shape&         startshape, // out: the start shape we are looking for
     Image&         face_roi,   // out: ROI around face, possibly rotated upright
     DetPar&        detpar_roi, // out: detpar wrt to face_roi
@@ -377,7 +377,7 @@ static void StartShapeAndRoi(  // we have the facerect, now get the rest
     FaceRoiAndDetPar(face_roi, detpar_roi,    // get ROI around face
                      img, detpar, false);
 
-    DetectEyesAndMouth(detpar_roi,            // use OpenCV eye and mouth detectors
+    DetectEyesAndMouth(detectors, detpar_roi,            // use OpenCV eye and mouth detectors
                        face_roi);
 
     // Some face detectors return the face rotation, some don't (in
@@ -400,7 +400,7 @@ static void StartShapeAndRoi(  // we have the facerect, now get the rest
             FaceRoiAndDetPar(face_roi, detpar_roi,
                              img, detpar, false);
 
-            DetectEyesAndMouth(detpar_roi,    // use OpenCV eye and mouth detectors
+            DetectEyesAndMouth(detectors, detpar_roi,    // use OpenCV eye and mouth detectors
                                face_roi);
         }
     }
@@ -440,7 +440,7 @@ static void StartShapeAndRoi(  // we have the facerect, now get the rest
 // ASM models are for right-facing faces.  For frontal faces (the yaw00
 // model), faces are not flipped.
 
-bool NextStartShapeAndRoi(     // use face detector results to estimate start shape
+bool NextStartShapeAndRoi(StasmData& detectors,     // use face detector results to estimate start shape
     Shape&         startshape, // out: the start shape
     Image&         face_roi,   // out: ROI around face, possibly rotated upright
     DetPar&        detpar_roi, // out: detpar wrt to face_roi
@@ -453,7 +453,7 @@ bool NextStartShapeAndRoi(     // use face detector results to estimate start sh
     detpar = facedet.NextFace_();  // get next face's detpar from the face det
 
     if (Valid(detpar.x))           // NextFace_ returned a face?
-        StartShapeAndRoi(startshape, face_roi, detpar_roi, detpar, img, mods);
+        StartShapeAndRoi(detectors, startshape, face_roi, detpar_roi, detpar, img, mods);
 
     return Valid(detpar.x);
 }

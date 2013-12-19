@@ -6,9 +6,9 @@
 
 namespace stasm
 {
-static cv::CascadeClassifier leye_det_g;  // left eye detector
-static cv::CascadeClassifier reye_det_g;  // right eye detector
-static cv::CascadeClassifier mouth_det_g; // mouth detector
+//static cv::CascadeClassifier leye_det_g;  // left eye detector
+//static cv::CascadeClassifier reye_det_g;  // right eye detector
+//static cv::CascadeClassifier mouth_det_g; // mouth detector
 
 //-----------------------------------------------------------------------------
 
@@ -202,12 +202,12 @@ bool NeedMouth(
 // the eye and mouth detectors will actually only be opened if any model in mods
 // actually needs them.  That is determined by the model's estart field.
 
-void OpenEyeMouthDetectors(
+void OpenEyeMouthDetectors(StasmData& detectors, 
     const vec_Mod& mods,    // in: the ASM models (used to see if we need eyes or mouth)
     const char*    datadir) // in
 {
     static bool needeyes = true; // static for efficiency
-    if (needeyes && leye_det_g.empty()) // not yet opened?
+    if (needeyes && detectors.leye_det_g.empty()) // not yet opened?
     {
         // we need the eyes if the estart field of any model
         // is ESTART_EYES or ESTART_EYE_AND_MOUTH
@@ -227,12 +227,12 @@ void OpenEyeMouthDetectors(
             // the MUCT and BioID sets: haarcascade_mcs_lefteye.xml finds more eyes
             // on the viewer's left than it finds on the right (milbo Lusaka Dec 2011).
 
-            OpenDetector(leye_det_g,  "haarcascade_mcs_lefteye.xml",  datadir);
-            OpenDetector(reye_det_g,  "haarcascade_mcs_righteye.xml", datadir);
+            OpenDetector(detectors.leye_det_g,  "haarcascade_mcs_lefteye.xml",  datadir);
+            OpenDetector(detectors.reye_det_g,  "haarcascade_mcs_righteye.xml", datadir);
         }
     }
     static bool needmouth = true; // static for efficiency
-    if (needmouth && mouth_det_g.empty()) // not yet opened?
+    if (needmouth && detectors.mouth_det_g.empty()) // not yet opened?
     {
         // we need the eyes if the estart field of any model is ESTART_EYE_AND_MOUTH
         needmouth = false;
@@ -240,19 +240,19 @@ void OpenEyeMouthDetectors(
             if (mods[imod]->Estart_() == ESTART_EYE_AND_MOUTH)
                 needmouth = true;
         if (needmouth)
-            OpenDetector(mouth_det_g, "haarcascade_mcs_mouth.xml", datadir);
+            OpenDetector(detectors.mouth_det_g, "haarcascade_mcs_mouth.xml", datadir);
     }
 }
 
-static void DetectAllEyes(
+static void DetectAllEyes(StasmData& detectors, 
     vec_Rect&    leyes,    // out
     vec_Rect&    reyes,    // out
     const Image& img,      // in
     EYAW         eyaw,     // in
     const Rect&  facerect) // in
 {
-    CV_Assert(!leye_det_g.empty()); // detector initialized?
-    CV_Assert(!reye_det_g.empty());
+    CV_Assert(!detectors.leye_det_g.empty()); // detector initialized?
+    CV_Assert(!detectors.reye_det_g.empty());
 
     // 1.2 is 40ms faster than 1.1 but finds slightly fewer eyes
     static const double EYE_SCALE_FACTOR   = 1.2;
@@ -262,19 +262,19 @@ static void DetectAllEyes(
     Rect leftrect(EyeSearchRect(eyaw, facerect, false));
 
     if (leftrect.width)
-        leyes = Detect(img, &leye_det_g, &leftrect,
+        leyes = Detect(img, &(detectors.leye_det_g), &leftrect,
                        EYE_SCALE_FACTOR, EYE_MIN_NEIGHBORS, EYE_DETECTOR_FLAGS,
                        facerect.width / 10);
 
     Rect rightrect(EyeSearchRect(eyaw, facerect, true));
 
     if (rightrect.width)
-        reyes = Detect(img, &reye_det_g, &rightrect,
+        reyes = Detect(img, &(detectors.reye_det_g), &rightrect,
                        EYE_SCALE_FACTOR, EYE_MIN_NEIGHBORS, EYE_DETECTOR_FLAGS,
                        facerect.width / 10);
 }
 
-static void DetectAllMouths(
+static void DetectAllMouths(StasmData& detectors, 
     vec_Rect&       mouths,      // out
     const Image&    img,         // in
     EYAW            eyaw,        // in
@@ -284,7 +284,7 @@ static void DetectAllMouths(
     const vec_Rect& leyes,       // in
     const vec_Rect& reyes)       // in
 {
-    CV_Assert(!mouth_det_g.empty()); // detector initialized?
+    CV_Assert(!detectors.mouth_det_g.empty()); // detector initialized?
 
     static const double MOUTH_SCALE_FACTOR   = 1.2; // less false pos with 1.2 than 1.1
     static const int    MOUTH_MIN_NEIGHBORS  = 5;   // less false pos with 5 than 3
@@ -294,7 +294,7 @@ static void DetectAllMouths(
                               eyaw, ileft_best, iright_best, leyes, reyes));
 
     mouths =
-        Detect(img, &mouth_det_g, &mouth_rect,
+        Detect(img, &(detectors.mouth_det_g), &mouth_rect,
                MOUTH_SCALE_FACTOR, MOUTH_MIN_NEIGHBORS, MOUTH_DETECTOR_FLAGS,
                facerect.width / 10);
 }
@@ -664,7 +664,7 @@ static void RectToImgFrame(
     y = featrect.y + featrect.height / 2;
 }
 
-void DetectEyesAndMouth(  // use OpenCV detectors to find the eyes and mouth
+void DetectEyesAndMouth(StasmData& detectors,  // use OpenCV detectors to find the eyes and mouth
     DetPar&       detpar, // io: eye and mouth fields updated, other fields untouched
     const Image&  img)    // in: ROI around face (already rotated if necessary)
 {
@@ -679,9 +679,9 @@ void DetectEyesAndMouth(  // use OpenCV detectors to find the eyes and mouth
     detpar.rex = detpar.rey = INVALID;
     vec_Rect leyes, reyes;
     int ileft_best = -1, iright_best = -1; // indices into leyes and reyes
-    if (!leye_det_g.empty()) // do we need the eyes? (depends on model estart field)
+    if (!detectors.leye_det_g.empty()) // do we need the eyes? (depends on model estart field)
     {
-        DetectAllEyes(leyes, reyes,
+        DetectAllEyes(detectors, leyes, reyes,
                       img, detpar.eyaw, facerect);
 
         SelectEyes(ileft_best, iright_best,
@@ -698,10 +698,10 @@ void DetectEyesAndMouth(  // use OpenCV detectors to find the eyes and mouth
     // possibly get the mouth
 
     detpar.mouthx = detpar.mouthy = INVALID;  // mark mouth as unavailable
-    if (!mouth_det_g.empty()) // do we need the mouth? (depends on model estart field)
+    if (!detectors.mouth_det_g.empty()) // do we need the mouth? (depends on model estart field)
     {
         vec_Rect mouths;
-        DetectAllMouths(mouths,
+        DetectAllMouths(detectors, mouths,
                         img, detpar.eyaw, facerect,
                         ileft_best, iright_best, leyes, reyes);
 

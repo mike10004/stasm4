@@ -62,17 +62,57 @@
 #ifndef STASM_LIB_H
 #define STASM_LIB_H
 
-static const int stasm_NLANDMARKS = 77; // number of landmarks
+#include <opencv2/objdetect/objdetect.hpp>
+
+#include "MOD_1/facedet.h"
+#include "misc.h"
+#include <vector>
+
+using std::vector;
+
+namespace stasm
+{
+
+    class Mod;
+    typedef vector<const Mod*> vec_Mod; // vector of ASM models, one for each yaw range
+    
+    class StasmData
+    {
+    public:
+        StasmData() : facedet_g(), leye_det_g(), reye_det_g(), mouth_det_g() {}
+        virtual ~StasmData() {
+            
+        }
+        cv::CascadeClassifier facedet_g;  // the face detector
+        cv::CascadeClassifier leye_det_g;  // left eye detector
+        cv::CascadeClassifier reye_det_g;  // right eye detector
+        cv::CascadeClassifier mouth_det_g; // mouth detector
+        vec_Mod mods_g;    // the ASM model(s)
+        FaceDet face_detector; // the face detector
+        Image   img_g;     // the current image
+        
+    };
+    
+    class StasmUtils
+    {
+    public:
+        static const char* GetModelsDataDir();
+    private:
+        StasmUtils();
+    };
+}
+
+using stasm::StasmData;
 
 extern const char* const stasm_VERSION;
 
 extern "C"
-int stasm_init(              // call once, at bootup
+int stasm_init(StasmData& detectors,              // call once, at bootup
     const char*  datadir,    // in: directory of face detector files
     int          trace);     // in: 0 normal use, 1 trace to stdout and stasm.log
 
 extern "C"
-int stasm_open_image(        // call once per image, detect faces
+int stasm_open_image(StasmData& detectors,        // call once per image, detect faces
     const char*  img,        // in: gray image data, top left corner at 0,0
     int          width,      // in: image width
     int          height,     // in: image height
@@ -81,12 +121,12 @@ int stasm_open_image(        // call once per image, detect faces
     int          minwidth);  // in: min face width as percentage of img width
 
 extern "C"
-int stasm_search_auto(       // call repeatedly to find all faces
+int stasm_search_auto( StasmData& detectors,      // call repeatedly to find all faces
     int*         foundface,  // out: 0=no more faces, 1=found face
     float*       landmarks); // out: x0, y0, x1, y1, ..., caller must allocate
 
 extern "C"
-int stasm_search_single(     // wrapper for stasm_search_auto and friends
+int stasm_search_single(StasmData& detectors,       // wrapper for stasm_search_auto and friends
     int*         foundface,  // out: 0=no face, 1=found face
     float*       landmarks,  // out: x0, y0, x1, y1, ..., caller must allocate
     const char*  img,        // in: gray image data, top left corner at 0,0

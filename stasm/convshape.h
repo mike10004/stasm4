@@ -5,6 +5,8 @@
 #ifndef STASM_CONVSHAPE_H
 #define STASM_CONVSHAPE_H
 
+#include "misc.h"
+
 namespace stasm
 {
 Shape ConvertShape(           // return shape with nlandmarks, return no rows if can't

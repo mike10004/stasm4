@@ -12,6 +12,11 @@
 #ifndef STASM_ASM_H
 #define STASM_ASM_H
 
+#include "misc.h"
+#include "basedesc.h"
+#include "shapemod.h"
+#include "stasm_lib.h"
+
 namespace stasm
 {
 static const int EYEMOUTH_DIST = 100;  // scale image to this before ASM search starts

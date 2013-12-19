@@ -57,9 +57,27 @@ build: .build-post
 	@echo "why am i here?"
 # Add your pre 'build' code here...
 
-.build-post: .build-impl
+# include project make variables
+include nbproject/Makefile-variables.mk
+
+CND_DISTDIR := dist
+CONF ?= Debug
+CND_PLATFORM_Debug ?= GNU-Linux-x86
+CND_PLATFORM_Release ?= GNU-Linux-x86
+CND_CONF := ${CONF}
+CND_PLATFORM := ${CND_PLATFORM_${CONF}}
+
+STLIBNAME := libstasm4.a
+
+.build-post: .build-impl ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}
 # Add your post 'build' code here...
 
+
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}: ${OBJECTFILES}
+	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}
+	${AR} -rv ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME} ${OBJECTFILES} 
+	$(RANLIB) ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}
 
 # clean
 clean: .clean-post
@@ -68,6 +86,7 @@ clean: .clean-post
 # Add your pre 'clean' code here...
 
 .clean-post: .clean-impl
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}
 # Add your post 'clean' code here...
 
 
@@ -125,5 +144,3 @@ help: .help-post
 # include project implementation makefile
 include nbproject/Makefile-impl.mk
 
-# include project make variables
-include nbproject/Makefile-variables.mk

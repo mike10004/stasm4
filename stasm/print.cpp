@@ -7,11 +7,11 @@
 
 namespace stasm
 {
-bool print_g;   // true to allow output to stdout (but error msgs always printed)
+bool print_g = false;   // true to allow output to stdout (but error msgs always printed)
 
-bool trace_g;   // true to trace Stasm internal operation
+bool trace_g = false;   // true to trace Stasm internal operation
 
-static FILE* logfile_g;  // lprintfs go to this log file as well as stdout
+static FILE* logfile_g = NULL;  // lprintfs go to this log file as well as stdout
 
 //-----------------------------------------------------------------------------
 

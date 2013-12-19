@@ -11,3 +11,6 @@
 *.lai
 *.la
 *.a
+/projects/stasm4/build/
+/projects/stasm4/dist/
+private/

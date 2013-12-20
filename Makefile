@@ -29,11 +29,11 @@ install-headers:
 	
 install-shlibs:
 	$(MKDIR) -p $(LIBDIR)
+	$(INSTALL) -t $(LIBDIR) -m 0644 $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.so
+
+install-stlibs:
+	$(MKDIR) -p $(LIBDIR)
 	$(INSTALL) -t $(LIBDIR) -m 0644 $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.a
 
-install-static:
-	$(MKDIR) -p $(LIBDIR)
-	$(INSTALL) -t $(LIBDIR) -m 0644 $(STLIBS_PROJ_ROOT)/dist/Release/GNU-Linux-x86
-
-install: all install-shlibs install-headers
+install: all install-shlibs install-stlibs install-headers
 	

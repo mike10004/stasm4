@@ -1,6 +1,6 @@
 stasm4 (4.0.0-1) unstable; urgency=low
 
-  * Initial release (Closes: #1)  <nnnn is the bug number of your ITP>
+  * Initial release (Closes: #1)
   * removed doc/LICENSE.txt because it's a duplicate of LICENSE in root
   * removed README.txt because it's been superceded by README.md
   * removed Windows-related stuff

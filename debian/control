@@ -11,19 +11,33 @@ Homepage: http://www.milbo.users.sonic.net/stasm/download.html
 Package: libstasm4-dev
 Section: libdevel
 Architecture: any
-Depends: libstasm4 (= ${binary:Version})
-Description: STASM face landmark detection library development files
+Depends: libstasm4 (= ${binary:Version}), ${misc:Depends}
+Description: Stasm face landmark detection library development files
  Development files for the STASM face landmark detection library. 
  This package contains the C++ headers and compiled static library.
-
-Package: libstasm4
-Section: libs
-Architecture: any
-Pre-Depends: ${misc:Pre-Depends}
-Multi-Arch: same
-Depends: ${shlibs:Depends}, ${misc:Depends}, libopencv-imgproc2.4, libopencv-objdetect2.4
-Description: STASM face landmark detection library
+ .
  Stasm is a C++ software library for finding features in faces. You 
  give it an image of a face and it returns the positions of the facial 
  features. Stasm is designed to work on front views of faces with
  neutral expressions.
+
+Package: libstasm4
+Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}, libopencv-imgproc2.4, libopencv-objdetect2.4
+Description: Stasm face landmark detection library
+ Stasm is a C++ software library for finding features in faces. You 
+ give it an image of a face and it returns the positions of the facial 
+ features. Stasm is designed to work on front views of faces with
+ neutral expressions.
+
+Package: stasm4-utils
+Section: misc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libstasm4 (>= 4.0.0)
+Description: Stasm face landmark detection utilities
+ Executables built against the Stasm software library. This package
+ contains a single executable, stasmark, that detects face landmarks
+ and prints them on standard output. Stasm is designed to work on front
+ views of faces with neutral expressions.

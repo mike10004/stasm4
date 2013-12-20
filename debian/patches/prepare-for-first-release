@@ -1,0 +1,3381 @@
+Description: Prepare for first release
+ Edit upstream sources to modernize and mitigate some potential integration
+ issues. Add standard make-based build system.
+ .
+ stasm4 (4.0.0-1) unstable; urgency=low
+ .
+   * Initial release (Closes: #1)  <nnnn is the bug number of your ITP>
+   * removed doc/LICENSE.txt because it's a duplicate of LICENSE in root
+   * removed README.txt because it's been superceded by README.md
+   * removed Windows-related stuff
+   * added netbeans project ignorable directories and auto-generated
+   files to .gitignore
+   * removed haarcascade data files because package depends on opencv;
+   moved test data to tests/data
+   * changed use of global CascadeClassifier and models vectors to
+   instance variables (as members of class StasmData)
+   * made implicit include directives explicit
+   * revised opencv include directives to use opencv2-style include
+   paths
+   * added explicit cv:: to calls to functions in cv namespace
+   * removed global static variables; now using StasmData objects
+   instead
+   * added stasm_constants.h to define num landmarks constant
+   * initialized static global debugging variables to false
+   * added test run output from upstream binary as reference data for
+   tests
+   * added netbeans project that builds modified upstream sources
+   * added basic smoke test to netbeans project
+   * added root makefile that defers to netbeans project makefile
+   * added copyright notice regarding modifications to original sources
+Author: Michael Chaberski <mchaberski+dev@gmail.com>
+Bug-Debian: http://bugs.debian.org/1
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: http://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: <YYYY-MM-DD>
+
+Index: stasm4-4.0.0/LICENSE
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/LICENSE	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,31 @@
++              Stasm License Agreement
++
++Copyright (C) 2005-2013, Stephen Milborrow
++All rights reserved.
++
++Redistribution of Stasm in source and binary forms, with or
++without modification, is permitted provided that the following
++conditions are met:
++  * Redistributions of source code must retain the above copyright notice,
++    this list of conditions and the following disclaimers.
++
++  * Redistributions in binary form must reproduce the above copyright notice,
++    this list of conditions and the following disclaimers in the documentation
++    and/or other materials provided with the distribution.
++
++A SIFT patent restriction may be in conflict with the copyright
++freedoms granted by this license.  This license does not give you
++permission to infringe patents.
++
++This software is provided by the copyright holders and contributors "as is" and
++any express or implied warranties, including, but not limited to, the implied
++warranties of merchantability and fitness for a particular purpose are disclaimed.
++In no event shall the copyright holder be liable for any direct,
++indirect, incidental, special, exemplary, or consequential damages
++(including, but not limited to, procurement of substitute goods or services;
++loss of use, data, or profits; or business interruption) however caused
++and on any theory of liability, whether in contract, strict liability,
++or tort (including negligence or otherwise) arising in any way out of
++the use of this software, even if advised of the possibility of such damage.
++
++Note that Stasm versions prior to version 4.0.0 had a different license.
+Index: stasm4-4.0.0/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/Makefile	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,39 @@
++#!/usr/bin/make
++
++DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
++PROJ_ROOT := projects/stasm4
++DESTDIR ?= $(PROJ_ROOT)/dist/install
++LIBDIR := $(DESTDIR)/usr/lib/$(DEB_HOST_MULTIARCH)
++CONF := Release
++include $(PROJ_ROOT)/nbproject/Makefile-variables.mk
++INSTALL := $(shell which install)
++MKDIR := mkdir
++RM := rm
++HEADERS_DEST_DIR := $(DESTDIR)/usr/include/stasm4
++HERE := $(CURDIR)
++
++all: build
++
++build:
++	"$(MAKE)" -C $(PROJ_ROOT) CONF=$(CONF) build
++
++clean:
++	"$(MAKE)" -C $(PROJ_ROOT) CONF=$(CONF) clean
++	rm -fr $(CURDIR)/nbproject
++
++install-headers:
++	$(MKDIR) -p $(HEADERS_DEST_DIR)
++	$(MKDIR) -p $(HEADERS_DEST_DIR)/MOD_1
++	$(INSTALL) -t $(HEADERS_DEST_DIR) -m 0644 $(HERE)/stasm/*.h
++	$(INSTALL) -t $(HEADERS_DEST_DIR)/MOD_1 -m 0644 $(HERE)/stasm/MOD_1/*.h
++	
++install-shlibs:
++	$(MKDIR) -p $(LIBDIR)
++	$(INSTALL) -t $(LIBDIR) -m 0644 $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.so
++
++install-stlibs:
++	$(MKDIR) -p $(LIBDIR)
++	$(INSTALL) -t $(LIBDIR) -m 0644 $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.a
++
++install: all install-shlibs install-stlibs install-headers
++	
+Index: stasm4-4.0.0/README.md
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/README.md	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,14 @@
++stasm4
++======
++
++Fork of STASM face landmarking software, customized for Linux.
++
++Please see doc/HISTORY.txt and www.milbo.users.sonic.net/stasm for further 
++details on upstream sources.
++
++The motivation for this fork is 
++ (1) to eliminate segfaults occurring in destructors of some OpenCV objects
++ (2) to modify and arrange code for easier building on Linux with common
++     build environment configurations
++ (3) to streamline for packaging Linux binaries
++
+Index: stasm4-4.0.0/VERSION.txt
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/VERSION.txt	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1 @@
++4.0.0 2013-05-28 http://www.milbo.users.sonic.net/stasm/download.html
+Index: stasm4-4.0.0/projects/stasm4/.dep.inc
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/projects/stasm4/.dep.inc	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,5 @@
++# This code depends on make tool being used
++DEPFILES=$(wildcard $(addsuffix .d, ${OBJECTFILES}))
++ifneq (${DEPFILES},)
++include ${DEPFILES}
++endif
+Index: stasm4-4.0.0/projects/stasm4/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/projects/stasm4/Makefile	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,152 @@
++#
++#  There exist several targets which are by default empty and which can be 
++#  used for execution of your targets. These targets are usually executed 
++#  before and after some main targets. They are: 
++#
++#     .build-pre:              called before 'build' target
++#     .build-post:             called after 'build' target
++#     .clean-pre:              called before 'clean' target
++#     .clean-post:             called after 'clean' target
++#     .clobber-pre:            called before 'clobber' target
++#     .clobber-post:           called after 'clobber' target
++#     .all-pre:                called before 'all' target
++#     .all-post:               called after 'all' target
++#     .help-pre:               called before 'help' target
++#     .help-post:              called after 'help' target
++#
++#  Targets beginning with '.' are not intended to be called on their own.
++#
++#  Main targets can be executed directly, and they are:
++#  
++#     build                    build a specific configuration
++#     clean                    remove built files from a configuration
++#     clobber                  remove all built files
++#     all                      build all configurations
++#     help                     print help mesage
++#  
++#  Targets .build-impl, .clean-impl, .clobber-impl, .all-impl, and
++#  .help-impl are implemented in nbproject/makefile-impl.mk.
++#
++#  Available make variables:
++#
++#     CND_BASEDIR                base directory for relative paths
++#     CND_DISTDIR                default top distribution directory (build artifacts)
++#     CND_BUILDDIR               default top build directory (object files, ...)
++#     CONF                       name of current configuration
++#     CND_PLATFORM_${CONF}       platform name (current configuration)
++#     CND_ARTIFACT_DIR_${CONF}   directory of build artifact (current configuration)
++#     CND_ARTIFACT_NAME_${CONF}  name of build artifact (current configuration)
++#     CND_ARTIFACT_PATH_${CONF}  path to build artifact (current configuration)
++#     CND_PACKAGE_DIR_${CONF}    directory of package (current configuration)
++#     CND_PACKAGE_NAME_${CONF}   name of package (current configuration)
++#     CND_PACKAGE_PATH_${CONF}   path to package (current configuration)
++#
++# NOCDDL
++
++
++# Environment 
++MKDIR=mkdir
++CP=cp
++CCADMIN=CCadmin
++RANLIB=ranlib
++
++# build
++build: .build-post
++
++.build-pre:
++	@echo "why am i here?"
++# Add your pre 'build' code here...
++
++# include project make variables
++include nbproject/Makefile-variables.mk
++
++CND_DISTDIR := dist
++CONF ?= Debug
++CND_PLATFORM_Debug ?= GNU-Linux-x86
++CND_PLATFORM_Release ?= GNU-Linux-x86
++CND_CONF := ${CONF}
++CND_PLATFORM := ${CND_PLATFORM_${CONF}}
++
++STLIBNAME := libstasm4.a
++
++.build-post: .build-impl ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}
++# Add your post 'build' code here...
++
++# Object Directory
++STLIB_BUILD_OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
++
++# Object Files
++STLIB_BUILD_OBJECTFILES=$(shell find ${STLIB_BUILD_OBJECTDIR} -type f -name "*.o")
++
++${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}: ${STLIB_BUILD_OBJECTFILES}
++	@echo "libstasm4.a: building static library from object files used to build shared library"
++	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
++	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}
++	${AR} -rv ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME} ${STLIB_BUILD_OBJECTFILES} 
++	$(RANLIB) ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}
++
++# clean
++clean: .clean-post
++
++.clean-pre:
++# Add your pre 'clean' code here...
++
++.clean-post: .clean-impl
++	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/${STLIBNAME}
++# Add your post 'clean' code here...
++
++
++# clobber
++clobber: .clobber-post
++
++.clobber-pre:
++# Add your pre 'clobber' code here...
++
++.clobber-post: .clobber-impl
++# Add your post 'clobber' code here...
++
++
++# all
++all: .all-post
++
++.all-pre:
++# Add your pre 'all' code here...
++
++.all-post: .all-impl
++# Add your post 'all' code here...
++
++
++# build tests
++build-tests: .build-tests-post
++
++.build-tests-pre:
++# Add your pre 'build-tests' code here...
++
++.build-tests-post: .build-tests-impl
++# Add your post 'build-tests' code here...
++
++
++# run tests
++test: .test-post
++
++.test-pre: build-tests
++# Add your pre 'test' code here...
++
++.test-post: .test-impl
++# Add your post 'test' code here...
++
++
++# help
++help: .help-post
++
++.help-pre:
++# Add your pre 'help' code here...
++
++.help-post: .help-impl
++# Add your post 'help' code here...
++
++
++
++# include project implementation makefile
++include nbproject/Makefile-impl.mk
++
+Index: stasm4-4.0.0/projects/stasm4/nbproject/Makefile-Debug.mk
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/projects/stasm4/nbproject/Makefile-Debug.mk	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,511 @@
++#
++# Generated Makefile - do not edit!
++#
++# Edit the Makefile in the project folder instead (../Makefile). Each target
++# has a -pre and a -post target defined where you can add customized code.
++#
++# This makefile implements configuration specific macros and targets.
++
++
++# Environment
++MKDIR=mkdir
++CP=cp
++GREP=grep
++NM=nm
++CCADMIN=CCadmin
++RANLIB=ranlib
++CC=gcc
++CCC=g++
++CXX=g++
++FC=gfortran
++AS=as
++
++# Macros
++CND_PLATFORM=GNU-Linux-x86
++CND_DLIB_EXT=so
++CND_CONF=Debug
++CND_DISTDIR=dist
++CND_BUILDDIR=build
++
++# Include project Makefile
++include Makefile
++
++# Object Directory
++OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
++
++# Object Files
++OBJECTFILES= \
++	${OBJECTDIR}/_ext/1480797537/facedet.o \
++	${OBJECTDIR}/_ext/1480797537/initasm.o \
++	${OBJECTDIR}/_ext/1634603738/asm.o \
++	${OBJECTDIR}/_ext/1634603738/classicdesc.o \
++	${OBJECTDIR}/_ext/1634603738/convshape.o \
++	${OBJECTDIR}/_ext/1634603738/err.o \
++	${OBJECTDIR}/_ext/1634603738/eyedet.o \
++	${OBJECTDIR}/_ext/1634603738/eyedist.o \
++	${OBJECTDIR}/_ext/1634603738/faceroi.o \
++	${OBJECTDIR}/_ext/1634603738/hat.o \
++	${OBJECTDIR}/_ext/1634603738/hatdesc.o \
++	${OBJECTDIR}/_ext/1634603738/landmarks.o \
++	${OBJECTDIR}/_ext/1634603738/misc.o \
++	${OBJECTDIR}/_ext/1634603738/pinstart.o \
++	${OBJECTDIR}/_ext/1634603738/print.o \
++	${OBJECTDIR}/_ext/1634603738/shape17.o \
++	${OBJECTDIR}/_ext/1634603738/shapehacks.o \
++	${OBJECTDIR}/_ext/1634603738/shapemod.o \
++	${OBJECTDIR}/_ext/1634603738/startshape.o \
++	${OBJECTDIR}/_ext/1634603738/stasm.o \
++	${OBJECTDIR}/_ext/1634603738/stasm_lib.o
++
++# Test Directory
++TESTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tests
++
++# Test Files
++TESTFILES= \
++	${TESTDIR}/TestFiles/f1
++
++# C Compiler Flags
++CFLAGS=
++
++# CC Compiler Flags
++CCFLAGS=
++CXXFLAGS=
++
++# Fortran Compiler Flags
++FFLAGS=
++
++# Assembler Flags
++ASFLAGS=
++
++# Link Libraries and Options
++LDLIBSOPTIONS=-lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_objdetect
++
++# Build Targets
++.build-conf: ${BUILD_SUBPROJECTS}
++	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT}
++
++${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT}: ${OBJECTFILES}
++	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
++	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -shared -fPIC
++
++${OBJECTDIR}/_ext/1480797537/facedet.o: ../../stasm/MOD_1/facedet.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1480797537
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1480797537/facedet.o ../../stasm/MOD_1/facedet.cpp
++
++${OBJECTDIR}/_ext/1480797537/initasm.o: ../../stasm/MOD_1/initasm.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1480797537
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1480797537/initasm.o ../../stasm/MOD_1/initasm.cpp
++
++${OBJECTDIR}/_ext/1634603738/asm.o: ../../stasm/asm.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/asm.o ../../stasm/asm.cpp
++
++${OBJECTDIR}/_ext/1634603738/classicdesc.o: ../../stasm/classicdesc.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/classicdesc.o ../../stasm/classicdesc.cpp
++
++${OBJECTDIR}/_ext/1634603738/convshape.o: ../../stasm/convshape.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/convshape.o ../../stasm/convshape.cpp
++
++${OBJECTDIR}/_ext/1634603738/err.o: ../../stasm/err.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/err.o ../../stasm/err.cpp
++
++${OBJECTDIR}/_ext/1634603738/eyedet.o: ../../stasm/eyedet.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/eyedet.o ../../stasm/eyedet.cpp
++
++${OBJECTDIR}/_ext/1634603738/eyedist.o: ../../stasm/eyedist.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/eyedist.o ../../stasm/eyedist.cpp
++
++${OBJECTDIR}/_ext/1634603738/faceroi.o: ../../stasm/faceroi.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/faceroi.o ../../stasm/faceroi.cpp
++
++${OBJECTDIR}/_ext/1634603738/hat.o: ../../stasm/hat.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/hat.o ../../stasm/hat.cpp
++
++${OBJECTDIR}/_ext/1634603738/hatdesc.o: ../../stasm/hatdesc.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/hatdesc.o ../../stasm/hatdesc.cpp
++
++${OBJECTDIR}/_ext/1634603738/landmarks.o: ../../stasm/landmarks.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/landmarks.o ../../stasm/landmarks.cpp
++
++${OBJECTDIR}/_ext/1634603738/misc.o: ../../stasm/misc.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/misc.o ../../stasm/misc.cpp
++
++${OBJECTDIR}/_ext/1634603738/pinstart.o: ../../stasm/pinstart.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/pinstart.o ../../stasm/pinstart.cpp
++
++${OBJECTDIR}/_ext/1634603738/print.o: ../../stasm/print.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/print.o ../../stasm/print.cpp
++
++${OBJECTDIR}/_ext/1634603738/shape17.o: ../../stasm/shape17.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/shape17.o ../../stasm/shape17.cpp
++
++${OBJECTDIR}/_ext/1634603738/shapehacks.o: ../../stasm/shapehacks.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/shapehacks.o ../../stasm/shapehacks.cpp
++
++${OBJECTDIR}/_ext/1634603738/shapemod.o: ../../stasm/shapemod.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/shapemod.o ../../stasm/shapemod.cpp
++
++${OBJECTDIR}/_ext/1634603738/startshape.o: ../../stasm/startshape.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/startshape.o ../../stasm/startshape.cpp
++
++${OBJECTDIR}/_ext/1634603738/stasm.o: ../../stasm/stasm.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/stasm.o ../../stasm/stasm.cpp
++
++${OBJECTDIR}/_ext/1634603738/stasm_lib.o: ../../stasm/stasm_lib.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -g -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/stasm_lib.o ../../stasm/stasm_lib.cpp
++
++# Subprojects
++.build-subprojects:
++
++# Build Test Targets
++.build-tests-conf: .build-conf ${TESTFILES}
++${TESTDIR}/TestFiles/f1: ${TESTDIR}/tests/DefaultLandmarksTest.o ${TESTDIR}/tests/landmarks_default_test_runner.o ${OBJECTFILES:%.o=%_nomain.o}
++	${MKDIR} -p ${TESTDIR}/TestFiles
++	${LINK.cc}   -o ${TESTDIR}/TestFiles/f1 $^ ${LDLIBSOPTIONS} `cppunit-config --libs`   
++
++
++${TESTDIR}/tests/DefaultLandmarksTest.o: tests/DefaultLandmarksTest.cc 
++	${MKDIR} -p ${TESTDIR}/tests
++	${RM} "$@.d"
++	$(COMPILE.cc) -g `cppunit-config --cflags` -MMD -MP -MF "$@.d" -o ${TESTDIR}/tests/DefaultLandmarksTest.o tests/DefaultLandmarksTest.cc
++
++
++${TESTDIR}/tests/landmarks_default_test_runner.o: tests/landmarks_default_test_runner.cc 
++	${MKDIR} -p ${TESTDIR}/tests
++	${RM} "$@.d"
++	$(COMPILE.cc) -g `cppunit-config --cflags` -MMD -MP -MF "$@.d" -o ${TESTDIR}/tests/landmarks_default_test_runner.o tests/landmarks_default_test_runner.cc
++
++
++${OBJECTDIR}/_ext/1480797537/facedet_nomain.o: ${OBJECTDIR}/_ext/1480797537/facedet.o ../../stasm/MOD_1/facedet.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1480797537
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1480797537/facedet.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1480797537/facedet_nomain.o ../../stasm/MOD_1/facedet.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1480797537/facedet.o ${OBJECTDIR}/_ext/1480797537/facedet_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1480797537/initasm_nomain.o: ${OBJECTDIR}/_ext/1480797537/initasm.o ../../stasm/MOD_1/initasm.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1480797537
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1480797537/initasm.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1480797537/initasm_nomain.o ../../stasm/MOD_1/initasm.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1480797537/initasm.o ${OBJECTDIR}/_ext/1480797537/initasm_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/asm_nomain.o: ${OBJECTDIR}/_ext/1634603738/asm.o ../../stasm/asm.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/asm.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/asm_nomain.o ../../stasm/asm.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/asm.o ${OBJECTDIR}/_ext/1634603738/asm_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/classicdesc_nomain.o: ${OBJECTDIR}/_ext/1634603738/classicdesc.o ../../stasm/classicdesc.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/classicdesc.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/classicdesc_nomain.o ../../stasm/classicdesc.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/classicdesc.o ${OBJECTDIR}/_ext/1634603738/classicdesc_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/convshape_nomain.o: ${OBJECTDIR}/_ext/1634603738/convshape.o ../../stasm/convshape.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/convshape.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/convshape_nomain.o ../../stasm/convshape.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/convshape.o ${OBJECTDIR}/_ext/1634603738/convshape_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/err_nomain.o: ${OBJECTDIR}/_ext/1634603738/err.o ../../stasm/err.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/err.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/err_nomain.o ../../stasm/err.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/err.o ${OBJECTDIR}/_ext/1634603738/err_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/eyedet_nomain.o: ${OBJECTDIR}/_ext/1634603738/eyedet.o ../../stasm/eyedet.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/eyedet.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/eyedet_nomain.o ../../stasm/eyedet.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/eyedet.o ${OBJECTDIR}/_ext/1634603738/eyedet_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/eyedist_nomain.o: ${OBJECTDIR}/_ext/1634603738/eyedist.o ../../stasm/eyedist.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/eyedist.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/eyedist_nomain.o ../../stasm/eyedist.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/eyedist.o ${OBJECTDIR}/_ext/1634603738/eyedist_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/faceroi_nomain.o: ${OBJECTDIR}/_ext/1634603738/faceroi.o ../../stasm/faceroi.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/faceroi.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/faceroi_nomain.o ../../stasm/faceroi.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/faceroi.o ${OBJECTDIR}/_ext/1634603738/faceroi_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/hat_nomain.o: ${OBJECTDIR}/_ext/1634603738/hat.o ../../stasm/hat.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/hat.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/hat_nomain.o ../../stasm/hat.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/hat.o ${OBJECTDIR}/_ext/1634603738/hat_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/hatdesc_nomain.o: ${OBJECTDIR}/_ext/1634603738/hatdesc.o ../../stasm/hatdesc.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/hatdesc.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/hatdesc_nomain.o ../../stasm/hatdesc.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/hatdesc.o ${OBJECTDIR}/_ext/1634603738/hatdesc_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/landmarks_nomain.o: ${OBJECTDIR}/_ext/1634603738/landmarks.o ../../stasm/landmarks.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/landmarks.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/landmarks_nomain.o ../../stasm/landmarks.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/landmarks.o ${OBJECTDIR}/_ext/1634603738/landmarks_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/misc_nomain.o: ${OBJECTDIR}/_ext/1634603738/misc.o ../../stasm/misc.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/misc.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/misc_nomain.o ../../stasm/misc.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/misc.o ${OBJECTDIR}/_ext/1634603738/misc_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/pinstart_nomain.o: ${OBJECTDIR}/_ext/1634603738/pinstart.o ../../stasm/pinstart.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/pinstart.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/pinstart_nomain.o ../../stasm/pinstart.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/pinstart.o ${OBJECTDIR}/_ext/1634603738/pinstart_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/print_nomain.o: ${OBJECTDIR}/_ext/1634603738/print.o ../../stasm/print.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/print.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/print_nomain.o ../../stasm/print.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/print.o ${OBJECTDIR}/_ext/1634603738/print_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/shape17_nomain.o: ${OBJECTDIR}/_ext/1634603738/shape17.o ../../stasm/shape17.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/shape17.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/shape17_nomain.o ../../stasm/shape17.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/shape17.o ${OBJECTDIR}/_ext/1634603738/shape17_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/shapehacks_nomain.o: ${OBJECTDIR}/_ext/1634603738/shapehacks.o ../../stasm/shapehacks.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/shapehacks.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/shapehacks_nomain.o ../../stasm/shapehacks.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/shapehacks.o ${OBJECTDIR}/_ext/1634603738/shapehacks_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/shapemod_nomain.o: ${OBJECTDIR}/_ext/1634603738/shapemod.o ../../stasm/shapemod.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/shapemod.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/shapemod_nomain.o ../../stasm/shapemod.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/shapemod.o ${OBJECTDIR}/_ext/1634603738/shapemod_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/startshape_nomain.o: ${OBJECTDIR}/_ext/1634603738/startshape.o ../../stasm/startshape.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/startshape.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/startshape_nomain.o ../../stasm/startshape.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/startshape.o ${OBJECTDIR}/_ext/1634603738/startshape_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/stasm_nomain.o: ${OBJECTDIR}/_ext/1634603738/stasm.o ../../stasm/stasm.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/stasm.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/stasm_nomain.o ../../stasm/stasm.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/stasm.o ${OBJECTDIR}/_ext/1634603738/stasm_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/stasm_lib_nomain.o: ${OBJECTDIR}/_ext/1634603738/stasm_lib.o ../../stasm/stasm_lib.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/stasm_lib.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -g -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/stasm_lib_nomain.o ../../stasm/stasm_lib.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/stasm_lib.o ${OBJECTDIR}/_ext/1634603738/stasm_lib_nomain.o;\
++	fi
++
++# Run Test Targets
++.test-conf:
++	@if [ "${TEST}" = "" ]; \
++	then  \
++	    ${TESTDIR}/TestFiles/f1 || true; \
++	else  \
++	    ./${TEST} || true; \
++	fi
++
++# Clean Targets
++.clean-conf: ${CLEAN_SUBPROJECTS}
++	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
++	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT}
++
++# Subprojects
++.clean-subprojects:
++
++# Enable dependency checking
++.dep.inc: .depcheck-impl
++
++include .dep.inc
+Index: stasm4-4.0.0/projects/stasm4/nbproject/Makefile-Release.mk
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/projects/stasm4/nbproject/Makefile-Release.mk	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,511 @@
++#
++# Generated Makefile - do not edit!
++#
++# Edit the Makefile in the project folder instead (../Makefile). Each target
++# has a -pre and a -post target defined where you can add customized code.
++#
++# This makefile implements configuration specific macros and targets.
++
++
++# Environment
++MKDIR=mkdir
++CP=cp
++GREP=grep
++NM=nm
++CCADMIN=CCadmin
++RANLIB=ranlib
++CC=gcc
++CCC=g++
++CXX=g++
++FC=gfortran
++AS=as
++
++# Macros
++CND_PLATFORM=GNU-Linux-x86
++CND_DLIB_EXT=so
++CND_CONF=Release
++CND_DISTDIR=dist
++CND_BUILDDIR=build
++
++# Include project Makefile
++include Makefile
++
++# Object Directory
++OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
++
++# Object Files
++OBJECTFILES= \
++	${OBJECTDIR}/_ext/1480797537/facedet.o \
++	${OBJECTDIR}/_ext/1480797537/initasm.o \
++	${OBJECTDIR}/_ext/1634603738/asm.o \
++	${OBJECTDIR}/_ext/1634603738/classicdesc.o \
++	${OBJECTDIR}/_ext/1634603738/convshape.o \
++	${OBJECTDIR}/_ext/1634603738/err.o \
++	${OBJECTDIR}/_ext/1634603738/eyedet.o \
++	${OBJECTDIR}/_ext/1634603738/eyedist.o \
++	${OBJECTDIR}/_ext/1634603738/faceroi.o \
++	${OBJECTDIR}/_ext/1634603738/hat.o \
++	${OBJECTDIR}/_ext/1634603738/hatdesc.o \
++	${OBJECTDIR}/_ext/1634603738/landmarks.o \
++	${OBJECTDIR}/_ext/1634603738/misc.o \
++	${OBJECTDIR}/_ext/1634603738/pinstart.o \
++	${OBJECTDIR}/_ext/1634603738/print.o \
++	${OBJECTDIR}/_ext/1634603738/shape17.o \
++	${OBJECTDIR}/_ext/1634603738/shapehacks.o \
++	${OBJECTDIR}/_ext/1634603738/shapemod.o \
++	${OBJECTDIR}/_ext/1634603738/startshape.o \
++	${OBJECTDIR}/_ext/1634603738/stasm.o \
++	${OBJECTDIR}/_ext/1634603738/stasm_lib.o
++
++# Test Directory
++TESTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tests
++
++# Test Files
++TESTFILES= \
++	${TESTDIR}/TestFiles/f1
++
++# C Compiler Flags
++CFLAGS=
++
++# CC Compiler Flags
++CCFLAGS=
++CXXFLAGS=
++
++# Fortran Compiler Flags
++FFLAGS=
++
++# Assembler Flags
++ASFLAGS=
++
++# Link Libraries and Options
++LDLIBSOPTIONS=-lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_objdetect
++
++# Build Targets
++.build-conf: ${BUILD_SUBPROJECTS}
++	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT}
++
++${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT}: ${OBJECTFILES}
++	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
++	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -shared -fPIC
++
++${OBJECTDIR}/_ext/1480797537/facedet.o: ../../stasm/MOD_1/facedet.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1480797537
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1480797537/facedet.o ../../stasm/MOD_1/facedet.cpp
++
++${OBJECTDIR}/_ext/1480797537/initasm.o: ../../stasm/MOD_1/initasm.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1480797537
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1480797537/initasm.o ../../stasm/MOD_1/initasm.cpp
++
++${OBJECTDIR}/_ext/1634603738/asm.o: ../../stasm/asm.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/asm.o ../../stasm/asm.cpp
++
++${OBJECTDIR}/_ext/1634603738/classicdesc.o: ../../stasm/classicdesc.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/classicdesc.o ../../stasm/classicdesc.cpp
++
++${OBJECTDIR}/_ext/1634603738/convshape.o: ../../stasm/convshape.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/convshape.o ../../stasm/convshape.cpp
++
++${OBJECTDIR}/_ext/1634603738/err.o: ../../stasm/err.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/err.o ../../stasm/err.cpp
++
++${OBJECTDIR}/_ext/1634603738/eyedet.o: ../../stasm/eyedet.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/eyedet.o ../../stasm/eyedet.cpp
++
++${OBJECTDIR}/_ext/1634603738/eyedist.o: ../../stasm/eyedist.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/eyedist.o ../../stasm/eyedist.cpp
++
++${OBJECTDIR}/_ext/1634603738/faceroi.o: ../../stasm/faceroi.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/faceroi.o ../../stasm/faceroi.cpp
++
++${OBJECTDIR}/_ext/1634603738/hat.o: ../../stasm/hat.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/hat.o ../../stasm/hat.cpp
++
++${OBJECTDIR}/_ext/1634603738/hatdesc.o: ../../stasm/hatdesc.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/hatdesc.o ../../stasm/hatdesc.cpp
++
++${OBJECTDIR}/_ext/1634603738/landmarks.o: ../../stasm/landmarks.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/landmarks.o ../../stasm/landmarks.cpp
++
++${OBJECTDIR}/_ext/1634603738/misc.o: ../../stasm/misc.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/misc.o ../../stasm/misc.cpp
++
++${OBJECTDIR}/_ext/1634603738/pinstart.o: ../../stasm/pinstart.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/pinstart.o ../../stasm/pinstart.cpp
++
++${OBJECTDIR}/_ext/1634603738/print.o: ../../stasm/print.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/print.o ../../stasm/print.cpp
++
++${OBJECTDIR}/_ext/1634603738/shape17.o: ../../stasm/shape17.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/shape17.o ../../stasm/shape17.cpp
++
++${OBJECTDIR}/_ext/1634603738/shapehacks.o: ../../stasm/shapehacks.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/shapehacks.o ../../stasm/shapehacks.cpp
++
++${OBJECTDIR}/_ext/1634603738/shapemod.o: ../../stasm/shapemod.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/shapemod.o ../../stasm/shapemod.cpp
++
++${OBJECTDIR}/_ext/1634603738/startshape.o: ../../stasm/startshape.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/startshape.o ../../stasm/startshape.cpp
++
++${OBJECTDIR}/_ext/1634603738/stasm.o: ../../stasm/stasm.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/stasm.o ../../stasm/stasm.cpp
++
++${OBJECTDIR}/_ext/1634603738/stasm_lib.o: ../../stasm/stasm_lib.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/stasm_lib.o ../../stasm/stasm_lib.cpp
++
++# Subprojects
++.build-subprojects:
++
++# Build Test Targets
++.build-tests-conf: .build-conf ${TESTFILES}
++${TESTDIR}/TestFiles/f1: ${TESTDIR}/tests/DefaultLandmarksTest.o ${TESTDIR}/tests/landmarks_default_test_runner.o ${OBJECTFILES:%.o=%_nomain.o}
++	${MKDIR} -p ${TESTDIR}/TestFiles
++	${LINK.cc}   -o ${TESTDIR}/TestFiles/f1 $^ ${LDLIBSOPTIONS} `cppunit-config --libs`   
++
++
++${TESTDIR}/tests/DefaultLandmarksTest.o: tests/DefaultLandmarksTest.cc 
++	${MKDIR} -p ${TESTDIR}/tests
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 `cppunit-config --cflags` -MMD -MP -MF "$@.d" -o ${TESTDIR}/tests/DefaultLandmarksTest.o tests/DefaultLandmarksTest.cc
++
++
++${TESTDIR}/tests/landmarks_default_test_runner.o: tests/landmarks_default_test_runner.cc 
++	${MKDIR} -p ${TESTDIR}/tests
++	${RM} "$@.d"
++	$(COMPILE.cc) -O2 `cppunit-config --cflags` -MMD -MP -MF "$@.d" -o ${TESTDIR}/tests/landmarks_default_test_runner.o tests/landmarks_default_test_runner.cc
++
++
++${OBJECTDIR}/_ext/1480797537/facedet_nomain.o: ${OBJECTDIR}/_ext/1480797537/facedet.o ../../stasm/MOD_1/facedet.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1480797537
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1480797537/facedet.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1480797537/facedet_nomain.o ../../stasm/MOD_1/facedet.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1480797537/facedet.o ${OBJECTDIR}/_ext/1480797537/facedet_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1480797537/initasm_nomain.o: ${OBJECTDIR}/_ext/1480797537/initasm.o ../../stasm/MOD_1/initasm.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1480797537
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1480797537/initasm.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1480797537/initasm_nomain.o ../../stasm/MOD_1/initasm.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1480797537/initasm.o ${OBJECTDIR}/_ext/1480797537/initasm_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/asm_nomain.o: ${OBJECTDIR}/_ext/1634603738/asm.o ../../stasm/asm.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/asm.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/asm_nomain.o ../../stasm/asm.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/asm.o ${OBJECTDIR}/_ext/1634603738/asm_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/classicdesc_nomain.o: ${OBJECTDIR}/_ext/1634603738/classicdesc.o ../../stasm/classicdesc.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/classicdesc.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/classicdesc_nomain.o ../../stasm/classicdesc.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/classicdesc.o ${OBJECTDIR}/_ext/1634603738/classicdesc_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/convshape_nomain.o: ${OBJECTDIR}/_ext/1634603738/convshape.o ../../stasm/convshape.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/convshape.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/convshape_nomain.o ../../stasm/convshape.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/convshape.o ${OBJECTDIR}/_ext/1634603738/convshape_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/err_nomain.o: ${OBJECTDIR}/_ext/1634603738/err.o ../../stasm/err.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/err.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/err_nomain.o ../../stasm/err.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/err.o ${OBJECTDIR}/_ext/1634603738/err_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/eyedet_nomain.o: ${OBJECTDIR}/_ext/1634603738/eyedet.o ../../stasm/eyedet.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/eyedet.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/eyedet_nomain.o ../../stasm/eyedet.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/eyedet.o ${OBJECTDIR}/_ext/1634603738/eyedet_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/eyedist_nomain.o: ${OBJECTDIR}/_ext/1634603738/eyedist.o ../../stasm/eyedist.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/eyedist.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/eyedist_nomain.o ../../stasm/eyedist.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/eyedist.o ${OBJECTDIR}/_ext/1634603738/eyedist_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/faceroi_nomain.o: ${OBJECTDIR}/_ext/1634603738/faceroi.o ../../stasm/faceroi.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/faceroi.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/faceroi_nomain.o ../../stasm/faceroi.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/faceroi.o ${OBJECTDIR}/_ext/1634603738/faceroi_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/hat_nomain.o: ${OBJECTDIR}/_ext/1634603738/hat.o ../../stasm/hat.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/hat.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/hat_nomain.o ../../stasm/hat.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/hat.o ${OBJECTDIR}/_ext/1634603738/hat_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/hatdesc_nomain.o: ${OBJECTDIR}/_ext/1634603738/hatdesc.o ../../stasm/hatdesc.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/hatdesc.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/hatdesc_nomain.o ../../stasm/hatdesc.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/hatdesc.o ${OBJECTDIR}/_ext/1634603738/hatdesc_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/landmarks_nomain.o: ${OBJECTDIR}/_ext/1634603738/landmarks.o ../../stasm/landmarks.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/landmarks.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/landmarks_nomain.o ../../stasm/landmarks.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/landmarks.o ${OBJECTDIR}/_ext/1634603738/landmarks_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/misc_nomain.o: ${OBJECTDIR}/_ext/1634603738/misc.o ../../stasm/misc.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/misc.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/misc_nomain.o ../../stasm/misc.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/misc.o ${OBJECTDIR}/_ext/1634603738/misc_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/pinstart_nomain.o: ${OBJECTDIR}/_ext/1634603738/pinstart.o ../../stasm/pinstart.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/pinstart.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/pinstart_nomain.o ../../stasm/pinstart.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/pinstart.o ${OBJECTDIR}/_ext/1634603738/pinstart_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/print_nomain.o: ${OBJECTDIR}/_ext/1634603738/print.o ../../stasm/print.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/print.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/print_nomain.o ../../stasm/print.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/print.o ${OBJECTDIR}/_ext/1634603738/print_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/shape17_nomain.o: ${OBJECTDIR}/_ext/1634603738/shape17.o ../../stasm/shape17.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/shape17.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/shape17_nomain.o ../../stasm/shape17.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/shape17.o ${OBJECTDIR}/_ext/1634603738/shape17_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/shapehacks_nomain.o: ${OBJECTDIR}/_ext/1634603738/shapehacks.o ../../stasm/shapehacks.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/shapehacks.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/shapehacks_nomain.o ../../stasm/shapehacks.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/shapehacks.o ${OBJECTDIR}/_ext/1634603738/shapehacks_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/shapemod_nomain.o: ${OBJECTDIR}/_ext/1634603738/shapemod.o ../../stasm/shapemod.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/shapemod.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/shapemod_nomain.o ../../stasm/shapemod.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/shapemod.o ${OBJECTDIR}/_ext/1634603738/shapemod_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/startshape_nomain.o: ${OBJECTDIR}/_ext/1634603738/startshape.o ../../stasm/startshape.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/startshape.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/startshape_nomain.o ../../stasm/startshape.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/startshape.o ${OBJECTDIR}/_ext/1634603738/startshape_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/stasm_nomain.o: ${OBJECTDIR}/_ext/1634603738/stasm.o ../../stasm/stasm.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/stasm.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/stasm_nomain.o ../../stasm/stasm.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/stasm.o ${OBJECTDIR}/_ext/1634603738/stasm_nomain.o;\
++	fi
++
++${OBJECTDIR}/_ext/1634603738/stasm_lib_nomain.o: ${OBJECTDIR}/_ext/1634603738/stasm_lib.o ../../stasm/stasm_lib.cpp 
++	${MKDIR} -p ${OBJECTDIR}/_ext/1634603738
++	@NMOUTPUT=`${NM} ${OBJECTDIR}/_ext/1634603738/stasm_lib.o`; \
++	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
++	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
++	then  \
++	    ${RM} "$@.d";\
++	    $(COMPILE.cc) -O2 -fPIC  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/1634603738/stasm_lib_nomain.o ../../stasm/stasm_lib.cpp;\
++	else  \
++	    ${CP} ${OBJECTDIR}/_ext/1634603738/stasm_lib.o ${OBJECTDIR}/_ext/1634603738/stasm_lib_nomain.o;\
++	fi
++
++# Run Test Targets
++.test-conf:
++	@if [ "${TEST}" = "" ]; \
++	then  \
++	    ${TESTDIR}/TestFiles/f1 || true; \
++	else  \
++	    ./${TEST} || true; \
++	fi
++
++# Clean Targets
++.clean-conf: ${CLEAN_SUBPROJECTS}
++	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
++	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT}
++
++# Subprojects
++.clean-subprojects:
++
++# Enable dependency checking
++.dep.inc: .depcheck-impl
++
++include .dep.inc
+Index: stasm4-4.0.0/projects/stasm4/nbproject/Makefile-impl.mk
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/projects/stasm4/nbproject/Makefile-impl.mk	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,133 @@
++# 
++# Generated Makefile - do not edit! 
++# 
++# Edit the Makefile in the project folder instead (../Makefile). Each target
++# has a pre- and a post- target defined where you can add customization code.
++#
++# This makefile implements macros and targets common to all configurations.
++#
++# NOCDDL
++
++
++# Building and Cleaning subprojects are done by default, but can be controlled with the SUB
++# macro. If SUB=no, subprojects will not be built or cleaned. The following macro
++# statements set BUILD_SUB-CONF and CLEAN_SUB-CONF to .build-reqprojects-conf
++# and .clean-reqprojects-conf unless SUB has the value 'no'
++SUB_no=NO
++SUBPROJECTS=${SUB_${SUB}}
++BUILD_SUBPROJECTS_=.build-subprojects
++BUILD_SUBPROJECTS_NO=
++BUILD_SUBPROJECTS=${BUILD_SUBPROJECTS_${SUBPROJECTS}}
++CLEAN_SUBPROJECTS_=.clean-subprojects
++CLEAN_SUBPROJECTS_NO=
++CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
++
++
++# Project Name
++PROJECTNAME=stasm4
++
++# Active Configuration
++DEFAULTCONF=Debug
++CONF=${DEFAULTCONF}
++
++# All Configurations
++ALLCONFS=Debug Release 
++
++
++# build
++.build-impl: .build-pre .validate-impl .depcheck-impl
++	@#echo "=> Running $@... Configuration=$(CONF)"
++	"${MAKE}" -f nbproject/Makefile-${CONF}.mk QMAKE=${QMAKE} SUBPROJECTS=${SUBPROJECTS} .build-conf
++
++
++# clean
++.clean-impl: .clean-pre .validate-impl .depcheck-impl
++	@#echo "=> Running $@... Configuration=$(CONF)"
++	"${MAKE}" -f nbproject/Makefile-${CONF}.mk QMAKE=${QMAKE} SUBPROJECTS=${SUBPROJECTS} .clean-conf
++
++
++# clobber 
++.clobber-impl: .clobber-pre .depcheck-impl
++	@#echo "=> Running $@..."
++	for CONF in ${ALLCONFS}; \
++	do \
++	    "${MAKE}" -f nbproject/Makefile-$${CONF}.mk QMAKE=${QMAKE} SUBPROJECTS=${SUBPROJECTS} .clean-conf; \
++	done
++
++# all 
++.all-impl: .all-pre .depcheck-impl
++	@#echo "=> Running $@..."
++	for CONF in ${ALLCONFS}; \
++	do \
++	    "${MAKE}" -f nbproject/Makefile-$${CONF}.mk QMAKE=${QMAKE} SUBPROJECTS=${SUBPROJECTS} .build-conf; \
++	done
++
++# build tests
++.build-tests-impl: .build-impl .build-tests-pre
++	@#echo "=> Running $@... Configuration=$(CONF)"
++	"${MAKE}" -f nbproject/Makefile-${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .build-tests-conf
++
++# run tests
++.test-impl: .build-tests-impl .test-pre
++	@#echo "=> Running $@... Configuration=$(CONF)"
++	"${MAKE}" -f nbproject/Makefile-${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .test-conf
++
++# dependency checking support
++.depcheck-impl:
++	@echo "# This code depends on make tool being used" >.dep.inc
++	@if [ -n "${MAKE_VERSION}" ]; then \
++	    echo "DEPFILES=\$$(wildcard \$$(addsuffix .d, \$${OBJECTFILES}))" >>.dep.inc; \
++	    echo "ifneq (\$${DEPFILES},)" >>.dep.inc; \
++	    echo "include \$${DEPFILES}" >>.dep.inc; \
++	    echo "endif" >>.dep.inc; \
++	else \
++	    echo ".KEEP_STATE:" >>.dep.inc; \
++	    echo ".KEEP_STATE_FILE:.make.state.\$${CONF}" >>.dep.inc; \
++	fi
++
++# configuration validation
++.validate-impl:
++	@if [ ! -f nbproject/Makefile-${CONF}.mk ]; \
++	then \
++	    echo ""; \
++	    echo "Error: can not find the makefile for configuration '${CONF}' in project ${PROJECTNAME}"; \
++	    echo "See 'make help' for details."; \
++	    echo "Current directory: " `pwd`; \
++	    echo ""; \
++	fi
++	@if [ ! -f nbproject/Makefile-${CONF}.mk ]; \
++	then \
++	    exit 1; \
++	fi
++
++
++# help
++.help-impl: .help-pre
++	@echo "This makefile supports the following configurations:"
++	@echo "    ${ALLCONFS}"
++	@echo ""
++	@echo "and the following targets:"
++	@echo "    build  (default target)"
++	@echo "    clean"
++	@echo "    clobber"
++	@echo "    all"
++	@echo "    help"
++	@echo ""
++	@echo "Makefile Usage:"
++	@echo "    make [CONF=<CONFIGURATION>] [SUB=no] build"
++	@echo "    make [CONF=<CONFIGURATION>] [SUB=no] clean"
++	@echo "    make [SUB=no] clobber"
++	@echo "    make [SUB=no] all"
++	@echo "    make help"
++	@echo ""
++	@echo "Target 'build' will build a specific configuration and, unless 'SUB=no',"
++	@echo "    also build subprojects."
++	@echo "Target 'clean' will clean a specific configuration and, unless 'SUB=no',"
++	@echo "    also clean subprojects."
++	@echo "Target 'clobber' will remove all built files from all configurations and,"
++	@echo "    unless 'SUB=no', also from subprojects."
++	@echo "Target 'all' will will build all configurations and, unless 'SUB=no',"
++	@echo "    also build subprojects."
++	@echo "Target 'help' prints this message."
++	@echo ""
++
+Index: stasm4-4.0.0/projects/stasm4/nbproject/Makefile-variables.mk
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/projects/stasm4/nbproject/Makefile-variables.mk	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,35 @@
++#
++# Generated - do not edit!
++#
++# NOCDDL
++#
++CND_BASEDIR=`pwd`
++CND_BUILDDIR=build
++CND_DISTDIR=dist
++# Debug configuration
++CND_PLATFORM_Debug=GNU-Linux-x86
++CND_ARTIFACT_DIR_Debug=dist/Debug/GNU-Linux-x86
++CND_ARTIFACT_NAME_Debug=libstasm4.so
++CND_ARTIFACT_PATH_Debug=dist/Debug/GNU-Linux-x86/libstasm4.so
++CND_PACKAGE_DIR_Debug=dist/Debug/GNU-Linux-x86/package
++CND_PACKAGE_NAME_Debug=libstasm4.so.tar
++CND_PACKAGE_PATH_Debug=dist/Debug/GNU-Linux-x86/package/libstasm4.so.tar
++# Release configuration
++CND_PLATFORM_Release=GNU-Linux-x86
++CND_ARTIFACT_DIR_Release=dist/Release/GNU-Linux-x86
++CND_ARTIFACT_NAME_Release=libstasm4.so
++CND_ARTIFACT_PATH_Release=dist/Release/GNU-Linux-x86/libstasm4.so
++CND_PACKAGE_DIR_Release=dist/Release/GNU-Linux-x86/package
++CND_PACKAGE_NAME_Release=libstasm4.so.tar
++CND_PACKAGE_PATH_Release=dist/Release/GNU-Linux-x86/package/libstasm4.so.tar
++#
++# include compiler specific variables
++#
++# dmake command
++ROOT:sh = test -f nbproject/private/Makefile-variables.mk || \
++	(mkdir -p nbproject/private && touch nbproject/private/Makefile-variables.mk)
++#
++# gmake command
++.PHONY: $(shell test -f nbproject/private/Makefile-variables.mk || (mkdir -p nbproject/private && touch nbproject/private/Makefile-variables.mk))
++#
++include nbproject/private/Makefile-variables.mk
+Index: stasm4-4.0.0/projects/stasm4/nbproject/Package-Debug.bash
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/projects/stasm4/nbproject/Package-Debug.bash	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,76 @@
++#!/bin/bash -x
++
++#
++# Generated - do not edit!
++#
++
++# Macros
++TOP=`pwd`
++CND_PLATFORM=GNU-Linux-x86
++CND_CONF=Debug
++CND_DISTDIR=dist
++CND_BUILDDIR=build
++CND_DLIB_EXT=so
++NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
++TMPDIRNAME=tmp-packaging
++OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT}
++OUTPUT_BASENAME=libstasm4.${CND_DLIB_EXT}
++PACKAGE_TOP_DIR=libstasm4.so/
++
++# Functions
++function checkReturnCode
++{
++    rc=$?
++    if [ $rc != 0 ]
++    then
++        exit $rc
++    fi
++}
++function makeDirectory
++# $1 directory path
++# $2 permission (optional)
++{
++    mkdir -p "$1"
++    checkReturnCode
++    if [ "$2" != "" ]
++    then
++      chmod $2 "$1"
++      checkReturnCode
++    fi
++}
++function copyFileToTmpDir
++# $1 from-file path
++# $2 to-file path
++# $3 permission
++{
++    cp "$1" "$2"
++    checkReturnCode
++    if [ "$3" != "" ]
++    then
++        chmod $3 "$2"
++        checkReturnCode
++    fi
++}
++
++# Setup
++cd "${TOP}"
++mkdir -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package
++rm -rf ${NBTMPDIR}
++mkdir -p ${NBTMPDIR}
++
++# Copy files and create directories and links
++cd "${TOP}"
++makeDirectory "${NBTMPDIR}/libstasm4.so/lib"
++copyFileToTmpDir "${OUTPUT_PATH}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}lib/${OUTPUT_BASENAME}" 0644
++
++
++# Generate tar file
++cd "${TOP}"
++rm -f ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libstasm4.so.tar
++cd ${NBTMPDIR}
++tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libstasm4.so.tar *
++checkReturnCode
++
++# Cleanup
++cd "${TOP}"
++rm -rf ${NBTMPDIR}
+Index: stasm4-4.0.0/projects/stasm4/nbproject/Package-Release.bash
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/projects/stasm4/nbproject/Package-Release.bash	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,76 @@
++#!/bin/bash -x
++
++#
++# Generated - do not edit!
++#
++
++# Macros
++TOP=`pwd`
++CND_PLATFORM=GNU-Linux-x86
++CND_CONF=Release
++CND_DISTDIR=dist
++CND_BUILDDIR=build
++CND_DLIB_EXT=so
++NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
++TMPDIRNAME=tmp-packaging
++OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT}
++OUTPUT_BASENAME=libstasm4.${CND_DLIB_EXT}
++PACKAGE_TOP_DIR=libstasm4.so/
++
++# Functions
++function checkReturnCode
++{
++    rc=$?
++    if [ $rc != 0 ]
++    then
++        exit $rc
++    fi
++}
++function makeDirectory
++# $1 directory path
++# $2 permission (optional)
++{
++    mkdir -p "$1"
++    checkReturnCode
++    if [ "$2" != "" ]
++    then
++      chmod $2 "$1"
++      checkReturnCode
++    fi
++}
++function copyFileToTmpDir
++# $1 from-file path
++# $2 to-file path
++# $3 permission
++{
++    cp "$1" "$2"
++    checkReturnCode
++    if [ "$3" != "" ]
++    then
++        chmod $3 "$2"
++        checkReturnCode
++    fi
++}
++
++# Setup
++cd "${TOP}"
++mkdir -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package
++rm -rf ${NBTMPDIR}
++mkdir -p ${NBTMPDIR}
++
++# Copy files and create directories and links
++cd "${TOP}"
++makeDirectory "${NBTMPDIR}/libstasm4.so/lib"
++copyFileToTmpDir "${OUTPUT_PATH}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}lib/${OUTPUT_BASENAME}" 0644
++
++
++# Generate tar file
++cd "${TOP}"
++rm -f ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libstasm4.so.tar
++cd ${NBTMPDIR}
++tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libstasm4.so.tar *
++checkReturnCode
++
++# Cleanup
++cd "${TOP}"
++rm -rf ${NBTMPDIR}
+Index: stasm4-4.0.0/projects/stasm4/nbproject/configurations.xml
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/projects/stasm4/nbproject/configurations.xml	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,377 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<configurationDescriptor version="90">
++  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
++    <logicalFolder name="HeaderFiles"
++                   displayName="Header Files"
++                   projectFiles="true">
++      <logicalFolder name="stasm" displayName="stasm" projectFiles="true">
++        <logicalFolder name="MOD_1" displayName="MOD_1" projectFiles="true">
++          <itemPath>../../stasm/MOD_1/facedet.h</itemPath>
++          <itemPath>../../stasm/MOD_1/initasm.h</itemPath>
++          <itemPath>../../stasm/MOD_1/yaw00.h</itemPath>
++        </logicalFolder>
++        <itemPath>../../stasm/asm.h</itemPath>
++        <itemPath>../../stasm/basedesc.h</itemPath>
++        <itemPath>../../stasm/classicdesc.h</itemPath>
++        <itemPath>../../stasm/convshape.h</itemPath>
++        <itemPath>../../stasm/err.h</itemPath>
++        <itemPath>../../stasm/eyedet.h</itemPath>
++        <itemPath>../../stasm/eyedist.h</itemPath>
++        <itemPath>../../stasm/faceroi.h</itemPath>
++        <itemPath>../../stasm/hat.h</itemPath>
++        <itemPath>../../stasm/hatdesc.h</itemPath>
++        <itemPath>../../stasm/landmarks.h</itemPath>
++        <itemPath>../../stasm/misc.h</itemPath>
++        <itemPath>../../stasm/pinstart.h</itemPath>
++        <itemPath>../../stasm/print.h</itemPath>
++        <itemPath>../../stasm/shape17.h</itemPath>
++        <itemPath>../../stasm/shapehacks.h</itemPath>
++        <itemPath>../../stasm/shapemod.h</itemPath>
++        <itemPath>../../stasm/startshape.h</itemPath>
++        <itemPath>../../stasm/stasm.h</itemPath>
++        <itemPath>../../stasm/stasm_constants.h</itemPath>
++        <itemPath>../../stasm/stasm_landmarks.h</itemPath>
++        <itemPath>../../stasm/stasm_lib.h</itemPath>
++        <itemPath>../../stasm/stasm_lib_ext.h</itemPath>
++      </logicalFolder>
++    </logicalFolder>
++    <logicalFolder name="ResourceFiles"
++                   displayName="Resource Files"
++                   projectFiles="true">
++    </logicalFolder>
++    <logicalFolder name="SourceFiles"
++                   displayName="Source Files"
++                   projectFiles="true">
++      <logicalFolder name="stasm" displayName="stasm" projectFiles="true">
++        <logicalFolder name="MOD_1" displayName="MOD_1" projectFiles="true">
++          <itemPath>../../stasm/MOD_1/facedet.cpp</itemPath>
++          <itemPath>../../stasm/MOD_1/initasm.cpp</itemPath>
++        </logicalFolder>
++        <itemPath>../../stasm/asm.cpp</itemPath>
++        <itemPath>../../stasm/classicdesc.cpp</itemPath>
++        <itemPath>../../stasm/convshape.cpp</itemPath>
++        <itemPath>../../stasm/err.cpp</itemPath>
++        <itemPath>../../stasm/eyedet.cpp</itemPath>
++        <itemPath>../../stasm/eyedist.cpp</itemPath>
++        <itemPath>../../stasm/faceroi.cpp</itemPath>
++        <itemPath>../../stasm/hat.cpp</itemPath>
++        <itemPath>../../stasm/hatdesc.cpp</itemPath>
++        <itemPath>../../stasm/landmarks.cpp</itemPath>
++        <itemPath>../../stasm/misc.cpp</itemPath>
++        <itemPath>../../stasm/pinstart.cpp</itemPath>
++        <itemPath>../../stasm/print.cpp</itemPath>
++        <itemPath>../../stasm/shape17.cpp</itemPath>
++        <itemPath>../../stasm/shapehacks.cpp</itemPath>
++        <itemPath>../../stasm/shapemod.cpp</itemPath>
++        <itemPath>../../stasm/startshape.cpp</itemPath>
++        <itemPath>../../stasm/stasm.cpp</itemPath>
++        <itemPath>../../stasm/stasm_lib.cpp</itemPath>
++      </logicalFolder>
++    </logicalFolder>
++    <logicalFolder name="TestFiles"
++                   displayName="Test Files"
++                   projectFiles="false"
++                   kind="TEST_LOGICAL_FOLDER">
++      <logicalFolder name="f1"
++                     displayName="landmarks_default"
++                     projectFiles="true"
++                     kind="TEST">
++        <itemPath>tests/DefaultLandmarksTest.cc</itemPath>
++        <itemPath>tests/DefaultLandmarksTest.h</itemPath>
++        <itemPath>tests/landmarks_default_test_runner.cc</itemPath>
++      </logicalFolder>
++    </logicalFolder>
++    <logicalFolder name="ExternalFiles"
++                   displayName="Important Files"
++                   projectFiles="false"
++                   kind="IMPORTANT_FILES_FOLDER">
++      <itemPath>Makefile</itemPath>
++    </logicalFolder>
++  </logicalFolder>
++  <sourceRootList>
++    <Elem>../../stasm</Elem>
++  </sourceRootList>
++  <projectmakefile>Makefile</projectmakefile>
++  <confs>
++    <conf name="Debug" type="2">
++      <toolsSet>
++        <compilerSet>default</compilerSet>
++        <dependencyChecking>true</dependencyChecking>
++        <rebuildPropChanged>false</rebuildPropChanged>
++      </toolsSet>
++      <compileType>
++        <linkerTool>
++          <linkerLibItems>
++            <linkerLibLibItem>opencv_core</linkerLibLibItem>
++            <linkerLibLibItem>opencv_highgui</linkerLibLibItem>
++            <linkerLibLibItem>opencv_imgproc</linkerLibLibItem>
++            <linkerLibLibItem>opencv_objdetect</linkerLibLibItem>
++          </linkerLibItems>
++        </linkerTool>
++      </compileType>
++      <item path="../../stasm/MOD_1/facedet.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/MOD_1/facedet.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/MOD_1/initasm.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/MOD_1/initasm.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/MOD_1/yaw00.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/asm.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/asm.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/basedesc.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/classicdesc.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/classicdesc.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/convshape.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/convshape.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/err.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/err.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/eyedet.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/eyedet.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/eyedist.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/eyedist.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/faceroi.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/faceroi.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/hat.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/hat.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/hatdesc.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/hatdesc.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/landmarks.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/landmarks.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/misc.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/misc.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/pinstart.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/pinstart.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/print.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/print.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/shape17.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/shape17.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/shapehacks.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/shapehacks.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/shapemod.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/shapemod.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/startshape.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/startshape.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm_constants.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm_landmarks.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm_lib.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm_lib.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm_lib_ext.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <folder path="TestFiles/f1">
++        <cTool>
++          <commandLine>`cppunit-config --cflags`</commandLine>
++        </cTool>
++        <ccTool>
++          <commandLine>`cppunit-config --cflags`</commandLine>
++        </ccTool>
++        <linkerTool>
++          <output>${TESTDIR}/TestFiles/f1</output>
++          <linkerLibItems>
++            <linkerOptionItem>`cppunit-config --libs`</linkerOptionItem>
++          </linkerLibItems>
++        </linkerTool>
++      </folder>
++      <item path="tests/DefaultLandmarksTest.cc" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="tests/DefaultLandmarksTest.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="tests/landmarks_default_test_runner.cc"
++            ex="false"
++            tool="1"
++            flavor2="0">
++      </item>
++    </conf>
++    <conf name="Release" type="2">
++      <toolsSet>
++        <compilerSet>default</compilerSet>
++        <dependencyChecking>true</dependencyChecking>
++        <rebuildPropChanged>false</rebuildPropChanged>
++      </toolsSet>
++      <compileType>
++        <cTool>
++          <developmentMode>5</developmentMode>
++        </cTool>
++        <ccTool>
++          <developmentMode>5</developmentMode>
++        </ccTool>
++        <fortranCompilerTool>
++          <developmentMode>5</developmentMode>
++        </fortranCompilerTool>
++        <asmTool>
++          <developmentMode>5</developmentMode>
++        </asmTool>
++        <linkerTool>
++          <linkerLibItems>
++            <linkerLibLibItem>opencv_core</linkerLibLibItem>
++            <linkerLibLibItem>opencv_highgui</linkerLibLibItem>
++            <linkerLibLibItem>opencv_imgproc</linkerLibLibItem>
++            <linkerLibLibItem>opencv_objdetect</linkerLibLibItem>
++          </linkerLibItems>
++        </linkerTool>
++      </compileType>
++      <item path="../../stasm/MOD_1/facedet.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/MOD_1/facedet.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/MOD_1/initasm.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/MOD_1/initasm.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/MOD_1/yaw00.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/asm.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/asm.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/basedesc.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/classicdesc.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/classicdesc.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/convshape.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/convshape.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/err.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/err.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/eyedet.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/eyedet.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/eyedist.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/eyedist.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/faceroi.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/faceroi.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/hat.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/hat.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/hatdesc.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/hatdesc.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/landmarks.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/landmarks.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/misc.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/misc.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/pinstart.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/pinstart.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/print.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/print.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/shape17.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/shape17.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/shapehacks.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/shapehacks.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/shapemod.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/shapemod.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/startshape.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/startshape.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm_constants.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm_landmarks.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm_lib.cpp" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm_lib.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="../../stasm/stasm_lib_ext.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <folder path="TestFiles/f1">
++        <cTool>
++          <commandLine>`cppunit-config --cflags`</commandLine>
++        </cTool>
++        <ccTool>
++          <commandLine>`cppunit-config --cflags`</commandLine>
++        </ccTool>
++        <linkerTool>
++          <output>${TESTDIR}/TestFiles/f1</output>
++          <linkerLibItems>
++            <linkerOptionItem>`cppunit-config --libs`</linkerOptionItem>
++          </linkerLibItems>
++        </linkerTool>
++      </folder>
++      <item path="tests/DefaultLandmarksTest.cc" ex="false" tool="1" flavor2="0">
++      </item>
++      <item path="tests/DefaultLandmarksTest.h" ex="false" tool="3" flavor2="0">
++      </item>
++      <item path="tests/landmarks_default_test_runner.cc"
++            ex="false"
++            tool="1"
++            flavor2="0">
++      </item>
++    </conf>
++  </confs>
++</configurationDescriptor>
+Index: stasm4-4.0.0/projects/stasm4/nbproject/project.xml
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/projects/stasm4/nbproject/project.xml	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,30 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project xmlns="http://www.netbeans.org/ns/project/1">
++    <type>org.netbeans.modules.cnd.makeproject</type>
++    <configuration>
++        <data xmlns="http://www.netbeans.org/ns/make-project/1">
++            <name>stasm4</name>
++            <c-extensions/>
++            <cpp-extensions>cc,cpp</cpp-extensions>
++            <header-extensions>h</header-extensions>
++            <sourceEncoding>UTF-8</sourceEncoding>
++            <make-dep-projects/>
++            <sourceRootList>
++                <sourceRootElem>../../stasm</sourceRootElem>
++            </sourceRootList>
++            <confList>
++                <confElem>
++                    <name>Debug</name>
++                    <type>2</type>
++                </confElem>
++                <confElem>
++                    <name>Release</name>
++                    <type>2</type>
++                </confElem>
++            </confList>
++            <formatting>
++                <project-formatting-style>false</project-formatting-style>
++            </formatting>
++        </data>
++    </configuration>
++</project>
+Index: stasm4-4.0.0/projects/stasm4/tests/DefaultLandmarksTest.cc
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/projects/stasm4/tests/DefaultLandmarksTest.cc	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,141 @@
++/*
++ * File:   DefaultLandmarksTest.cc
++ * Author: mchaberski
++ *
++ * Created on Dec 19, 2013, 10:53:06 AM
++ */
++
++#include "../../../stasm/stasm.h"
++#include "DefaultLandmarksTest.h"
++#include <vector>
++#include <fstream>
++#include <iostream>
++#include <opencv2/highgui/highgui.hpp>
++#include <opencv2/core/core.hpp>
++
++using namespace std;
++using namespace stasm;
++
++CPPUNIT_TEST_SUITE_REGISTRATION(DefaultLandmarksTest);
++
++    // round a floating point number to the nearest integer
++    template <typename Arg>
++    int Round(Arg r)
++    {
++        return (r > (Arg) 0.0) ? (int)(r + (Arg) 0.5) : (int)(r - (Arg) 0.5);
++    }
++
++DefaultLandmarksTest::DefaultLandmarksTest() {
++}
++
++DefaultLandmarksTest::~DefaultLandmarksTest() {
++}
++
++void DefaultLandmarksTest::setUp() {
++}
++
++void DefaultLandmarksTest::tearDown() {
++}
++
++static bool populate_landmarks(vector<int>& x_dst, vector<int>& y_dst, float* landmarks_src)
++{
++    for (int i = 0; i < stasm_NLANDMARKS; i++) {
++        float xf = landmarks_src[i*2];
++        float yf = landmarks_src[i*2+1];
++        int x = Round(xf), y = Round(yf);
++        x_dst.push_back(x);
++        y_dst.push_back(y);
++    }
++    cerr << "populated " << x_dst.size() << " landmarks from float array" << endl;
++}
++
++static bool detect_landmarks(bool multi, int minwidth, const char* image_pathname, vector<int>& xs, vector<int>& ys)
++{
++    const cv::Mat_<unsigned char> img(cv::imread(image_pathname, CV_LOAD_IMAGE_GRAYSCALE));
++    if (!img.data) {// could not load image?
++        cerr << "failed to load image from path " <<  image_pathname << endl;
++        return false;
++    }
++    StasmData stasm_data;
++    const int trace = 0;
++    if (!stasm_init(stasm_data, StasmUtils::GetModelsDataDir(), trace)) {
++        cerr << "stasm_init failed: " << stasm_lasterr() << endl;
++        return false;
++    }
++    if (!stasm_open_image(stasm_data, (const char*)img.data, img.cols, img.rows, image_pathname, multi, minwidth)) {
++        cerr << "stasm_open_image failed: " << stasm_lasterr() << endl;
++    }
++    // Test stasm_search_auto.
++    // The min face size was set in the above stasm_open_image call.
++
++    float landmarks[2 * stasm_NLANDMARKS]; // x,y coords
++    int num_faces = 0;
++    while (true) {
++        cerr << "--- Auto Face " << num_faces << endl;
++        int foundface;
++        float estyaw;
++        if (!stasm_search_auto_ext(stasm_data, &foundface, landmarks, &estyaw)) {
++            cerr << "stasm_search_auto_ext failed: " << stasm_lasterr() << endl;
++            return false;
++        }
++        populate_landmarks(xs, ys, landmarks);
++        if (!foundface) {
++            cerr << "No more faces" << endl;
++            break; // note break
++        }
++        num_faces++;
++        cerr << "Final with auto init; yaw = " << estyaw << endl;
++        if (!multi) {
++            break;
++        }
++    }
++    return true;
++}
++
++static bool are_equal(vector<int>& a, vector<int>& b)
++{
++    if (a.size() != b.size()) {
++        cerr << "vectors incongruent: " << a.size() << " != " << b.size() << endl;
++        return false;
++    }
++    for (size_t i = 0; i < a.size(); i++) {
++        if (a[i] != b[i]) {
++            cerr << "vectors not equal at index " << i << endl;
++            return false;
++        }
++    }
++    return true;
++}
++
++void DefaultLandmarksTest::testMethod() {
++    const char* expected_landmarks_pathname = "../../tests/data/test_stasm_lib_testface_output.txt";
++    vector<int> expected_xs;
++    vector<int> expected_ys;
++    ifstream infile(expected_landmarks_pathname);
++    CPPUNIT_ASSERT(infile.is_open());
++    int x, y;
++    while (infile >> x >> y) {
++        expected_xs.push_back(x);
++        expected_ys.push_back(y);
++    }
++    for (size_t i = 0; i < expected_xs.size(); i++) {
++        cerr << "x = " << expected_xs[i] << " y = " << expected_ys[i] << endl;
++    }
++    cerr << "finished reading " << expected_landmarks_pathname << endl;
++    
++    vector<int> actual_xs;
++    vector<int> actual_ys;
++    const char* image_pathname = "../../tests/data/testface.jpg";
++    bool ok = detect_landmarks(false, 10, image_pathname, actual_xs, actual_ys);
++    CPPUNIT_ASSERT(ok);
++    for (size_t i = 0; i < actual_xs.size(); i++) {
++        cerr << "x = " << actual_xs[i] << " y = " << actual_ys[i] << endl;
++    }
++    CPPUNIT_ASSERT(are_equal(expected_xs, actual_xs));
++    CPPUNIT_ASSERT(are_equal(expected_ys, actual_ys));
++}
++
++void DefaultLandmarksTest::testFailedMethod() {
++//    CPPUNIT_ASSERT(false);
++}
++
+Index: stasm4-4.0.0/projects/stasm4/tests/DefaultLandmarksTest.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/projects/stasm4/tests/DefaultLandmarksTest.h	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,33 @@
++/*
++ * File:   DefaultLandmarksTest.h
++ * Author: mchaberski
++ *
++ * Created on Dec 19, 2013, 10:53:06 AM
++ */
++
++#ifndef DEFAULTLANDMARKSTEST_H
++#define	DEFAULTLANDMARKSTEST_H
++
++#include <cppunit/extensions/HelperMacros.h>
++
++class DefaultLandmarksTest : public CPPUNIT_NS::TestFixture {
++    CPPUNIT_TEST_SUITE(DefaultLandmarksTest);
++
++    CPPUNIT_TEST(testMethod);
++    CPPUNIT_TEST(testFailedMethod);
++
++    CPPUNIT_TEST_SUITE_END();
++
++public:
++    DefaultLandmarksTest();
++    virtual ~DefaultLandmarksTest();
++    void setUp();
++    void tearDown();
++
++private:
++    void testMethod();
++    void testFailedMethod();
++};
++
++#endif	/* DEFAULTLANDMARKSTEST_H */
++
+Index: stasm4-4.0.0/projects/stasm4/tests/landmarks_default_test_runner.cc
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/projects/stasm4/tests/landmarks_default_test_runner.cc	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,37 @@
++/*
++ * File:   landmarks_default_test_runner.cc
++ * Author: mchaberski
++ *
++ * Created on Dec 19, 2013, 10:53:06 AM
++ */
++
++#include <cppunit/BriefTestProgressListener.h>
++#include <cppunit/CompilerOutputter.h>
++#include <cppunit/extensions/TestFactoryRegistry.h>
++#include <cppunit/TestResult.h>
++#include <cppunit/TestResultCollector.h>
++#include <cppunit/TestRunner.h>
++
++int main() {
++    // Create the event manager and test controller
++    CPPUNIT_NS::TestResult controller;
++
++    // Add a listener that colllects test result
++    CPPUNIT_NS::TestResultCollector result;
++    controller.addListener(&result);
++
++    // Add a listener that print dots as test run.
++    CPPUNIT_NS::BriefTestProgressListener progress;
++    controller.addListener(&progress);
++
++    // Add the top suite to the test runner
++    CPPUNIT_NS::TestRunner runner;
++    runner.addTest(CPPUNIT_NS::TestFactoryRegistry::getRegistry().makeTest());
++    runner.run(controller);
++
++    // Print test in a compiler compatible format.
++    CPPUNIT_NS::CompilerOutputter outputter(&result, CPPUNIT_NS::stdCOut());
++    outputter.write();
++
++    return result.wasSuccessful() ? 0 : 1;
++}
+Index: stasm4-4.0.0/stasm/MOD_1/facedet.cpp
+===================================================================
+--- stasm4-4.0.0.orig/stasm/MOD_1/facedet.cpp	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/MOD_1/facedet.cpp	2013-12-19 17:38:35.000000000 -0500
+@@ -3,19 +3,21 @@
+ // Copyright (C) 2005-2013, Stephen Milborrow
+ 
+ #include "../stasm.h"
++#include <opencv2/imgproc/imgproc.hpp>
++#include <algorithm>
+ 
+ namespace stasm
+ {
+ typedef vector<DetPar> vec_DetPar;
+ 
+-static cv::CascadeClassifier facedet_g;  // the face detector
++//static cv::CascadeClassifier facedet_g;  // the face detector
+ 
+ static double BORDER_FRAC = 0.1; // fraction of image width or height
+                                  // use 0.0 for no border
+ 
+ //-----------------------------------------------------------------------------
+ 
+-void FaceDet::OpenFaceDetector_( // called by stasm_init, init face det from XML file
++void FaceDet::OpenFaceDetector_(cv::CascadeClassifier& facedet_g, // called by stasm_init, init face det from XML file
+     const char* datadir,         // in: directory of face detector files
+     void*)                       // in: unused (func signature compatibility)
+ {
+@@ -34,13 +36,13 @@
+     Image bordered_img(img);
+     leftborder = cvRound(BORDER_FRAC * bordered_img.cols);
+     topborder  = cvRound(BORDER_FRAC * bordered_img.rows);
+-    copyMakeBorder(bordered_img, bordered_img,
++    cv::copyMakeBorder(bordered_img, bordered_img,
+                    topborder, topborder, leftborder, leftborder,
+                    cv::BORDER_REPLICATE);
+     return bordered_img;
+ }
+ 
+-void DetectFaces(          // all face rects into detpars
++void DetectFaces(cv::CascadeClassifier& facedet_g,          // all face rects into detpars
+     vec_DetPar&  detpars,  // out
+     const Image& img,      // in
+     int          minwidth) // in: as percent of img width
+@@ -121,7 +123,7 @@
+     if (NSIZE(detpars) >= 3) // need at least 3 faces
+     {
+         // sort the faces on their width (smallest first) so can get median width
+-        sort(detpars.begin(), detpars.end(), DecreasingWidth);
++        std::sort(detpars.begin(), detpars.end(), DecreasingWidth);
+         const int median     = cvRound(detpars[NSIZE(detpars) / 2].width);
+         const int minallowed = cvRound(median / MIN_WIDTH);
+         const int maxallowed = cvRound(MAX_WIDTH * median);
+@@ -166,7 +168,7 @@
+ #endif
+ }
+ 
+-void FaceDet::DetectFaces_(  // call once per image to find all the faces
++void FaceDet::DetectFaces_(cv::CascadeClassifier& facedet_g,  // call once per image to find all the faces
+     const Image& img,        // in: the image (grayscale)
+     const char*,             // in: unused (match virt func signature)
+     bool         multiface,  // in: if false, want only the best face
+@@ -175,19 +177,19 @@
+ {
+     CV_Assert(user == NULL);
+     CV_Assert(!facedet_g.empty()); // check that OpenFaceDetector_ was called
+-    DetectFaces(detpars_, img, minwidth);
++    DetectFaces(facedet_g, detpars_, img, minwidth);
+     TraceFaces(detpars_, img, "facedet_BeforeDiscardMissizedFaces.bmp");
+     DiscardMissizedFaces(detpars_);
+     TraceFaces(detpars_, img, "facedet_AfterDiscardMissizedFaces.bmp");
+     if (multiface) // order faces on increasing distance from left margin
+     {
+-        sort(detpars_.begin(), detpars_.end(), IncreasingLeftMargin);
++        std::sort(detpars_.begin(), detpars_.end(), IncreasingLeftMargin);
+         TraceFaces(detpars_, img, "facedet.bmp");
+     }
+     else
+     {
+         // order faces on decreasing width, keep only the first (the largest face)
+-        sort(detpars_.begin(), detpars_.end(), DecreasingWidth);
++        std::sort(detpars_.begin(), detpars_.end(), DecreasingWidth);
+         TraceFaces(detpars_, img, "facedet.bmp");
+         if (NSIZE(detpars_))
+             detpars_.resize(1);
+Index: stasm4-4.0.0/stasm/MOD_1/facedet.h
+===================================================================
+--- stasm4-4.0.0.orig/stasm/MOD_1/facedet.h	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/MOD_1/facedet.h	2013-12-19 17:38:35.000000000 -0500
+@@ -5,12 +5,14 @@
+ #ifndef STASM_FACEDET_H
+ #define STASM_FACEDET_H
+ 
++#include <opencv2/objdetect/objdetect.hpp>
++
+ namespace stasm
+ {
+ class FaceDet
+ {
+ public:
+-    void OpenFaceDetector_( // called by stasm_init, init face det from XML file
++    void OpenFaceDetector_(cv::CascadeClassifier& facedet_g, // called by stasm_init, init face det from XML file
+         const char* datadir,      // in: directory of face detector files
+         void*       detparams);   // in: unused (func signature compatibility)
+ 
+@@ -24,7 +26,7 @@
+     // implementation were to initialize detpar.rot, StartShapeAndRoi1 would
+     // use it (instead of estimating it from the eye angle).
+ 
+-    void DetectFaces_(            // call once per image to find all the faces
++    void DetectFaces_(cv::CascadeClassifier& facedet_g,            // call once per image to find all the faces
+         const Image& img,         // in: the image (grayscale)
+         const char*  imgpath,     // in: unused (match virt func signature)
+         bool         multiface,   // in: if false, want only the best face
+Index: stasm4-4.0.0/stasm/MOD_1/initasm.h
+===================================================================
+--- stasm4-4.0.0.orig/stasm/MOD_1/initasm.h	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/MOD_1/initasm.h	2013-12-19 17:38:35.000000000 -0500
+@@ -5,6 +5,9 @@
+ #ifndef STASM_INITASM_H
+ #define STASM_INITASM_H
+ 
++#include "../asm.h"
++#include "../stasm_lib.h"
++
+ namespace stasm
+ {
+ void InitMods(
+Index: stasm4-4.0.0/stasm/asm.cpp
+===================================================================
+--- stasm4-4.0.0.orig/stasm/asm.cpp	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/asm.cpp	2013-12-19 17:38:35.000000000 -0500
+@@ -3,6 +3,7 @@
+ // Copyright (C) 2005-2013, Stephen Milborrow
+ 
+ #include "stasm.h"
++#include <opencv2/imgproc/imgproc.hpp>
+ 
+ namespace stasm
+ {
+Index: stasm4-4.0.0/stasm/asm.h
+===================================================================
+--- stasm4-4.0.0.orig/stasm/asm.h	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/asm.h	2013-12-19 17:38:35.000000000 -0500
+@@ -12,6 +12,11 @@
+ #ifndef STASM_ASM_H
+ #define STASM_ASM_H
+ 
++#include "misc.h"
++#include "basedesc.h"
++#include "shapemod.h"
++#include "stasm_lib.h"
++
+ namespace stasm
+ {
+ static const int EYEMOUTH_DIST = 100;  // scale image to this before ASM search starts
+Index: stasm4-4.0.0/stasm/convshape.h
+===================================================================
+--- stasm4-4.0.0.orig/stasm/convshape.h	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/convshape.h	2013-12-19 17:38:35.000000000 -0500
+@@ -5,6 +5,8 @@
+ #ifndef STASM_CONVSHAPE_H
+ #define STASM_CONVSHAPE_H
+ 
++#include "misc.h"
++
+ namespace stasm
+ {
+ Shape ConvertShape(           // return shape with nlandmarks, return no rows if can't
+Index: stasm4-4.0.0/stasm/err.cpp
+===================================================================
+--- stasm4-4.0.0.orig/stasm/err.cpp	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/err.cpp	2013-12-19 17:38:35.000000000 -0500
+@@ -26,6 +26,7 @@
+ // Copyright (C) 2005-2013, Stephen Milborrow
+ 
+ #include "stasm.h"
++#include <opencv2/core/core_c.h>
+ 
+ namespace stasm
+ {
+Index: stasm4-4.0.0/stasm/eyedet.cpp
+===================================================================
+--- stasm4-4.0.0.orig/stasm/eyedet.cpp	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/eyedet.cpp	2013-12-19 17:38:35.000000000 -0500
+@@ -6,9 +6,9 @@
+ 
+ namespace stasm
+ {
+-static cv::CascadeClassifier leye_det_g;  // left eye detector
+-static cv::CascadeClassifier reye_det_g;  // right eye detector
+-static cv::CascadeClassifier mouth_det_g; // mouth detector
++//static cv::CascadeClassifier leye_det_g;  // left eye detector
++//static cv::CascadeClassifier reye_det_g;  // right eye detector
++//static cv::CascadeClassifier mouth_det_g; // mouth detector
+ 
+ //-----------------------------------------------------------------------------
+ 
+@@ -202,12 +202,12 @@
+ // the eye and mouth detectors will actually only be opened if any model in mods
+ // actually needs them.  That is determined by the model's estart field.
+ 
+-void OpenEyeMouthDetectors(
++void OpenEyeMouthDetectors(StasmData& detectors, 
+     const vec_Mod& mods,    // in: the ASM models (used to see if we need eyes or mouth)
+     const char*    datadir) // in
+ {
+     static bool needeyes = true; // static for efficiency
+-    if (needeyes && leye_det_g.empty()) // not yet opened?
++    if (needeyes && detectors.leye_det_g.empty()) // not yet opened?
+     {
+         // we need the eyes if the estart field of any model
+         // is ESTART_EYES or ESTART_EYE_AND_MOUTH
+@@ -227,12 +227,12 @@
+             // the MUCT and BioID sets: haarcascade_mcs_lefteye.xml finds more eyes
+             // on the viewer's left than it finds on the right (milbo Lusaka Dec 2011).
+ 
+-            OpenDetector(leye_det_g,  "haarcascade_mcs_lefteye.xml",  datadir);
+-            OpenDetector(reye_det_g,  "haarcascade_mcs_righteye.xml", datadir);
++            OpenDetector(detectors.leye_det_g,  "haarcascade_mcs_lefteye.xml",  datadir);
++            OpenDetector(detectors.reye_det_g,  "haarcascade_mcs_righteye.xml", datadir);
+         }
+     }
+     static bool needmouth = true; // static for efficiency
+-    if (needmouth && mouth_det_g.empty()) // not yet opened?
++    if (needmouth && detectors.mouth_det_g.empty()) // not yet opened?
+     {
+         // we need the eyes if the estart field of any model is ESTART_EYE_AND_MOUTH
+         needmouth = false;
+@@ -240,19 +240,19 @@
+             if (mods[imod]->Estart_() == ESTART_EYE_AND_MOUTH)
+                 needmouth = true;
+         if (needmouth)
+-            OpenDetector(mouth_det_g, "haarcascade_mcs_mouth.xml", datadir);
++            OpenDetector(detectors.mouth_det_g, "haarcascade_mcs_mouth.xml", datadir);
+     }
+ }
+ 
+-static void DetectAllEyes(
++static void DetectAllEyes(StasmData& detectors, 
+     vec_Rect&    leyes,    // out
+     vec_Rect&    reyes,    // out
+     const Image& img,      // in
+     EYAW         eyaw,     // in
+     const Rect&  facerect) // in
+ {
+-    CV_Assert(!leye_det_g.empty()); // detector initialized?
+-    CV_Assert(!reye_det_g.empty());
++    CV_Assert(!detectors.leye_det_g.empty()); // detector initialized?
++    CV_Assert(!detectors.reye_det_g.empty());
+ 
+     // 1.2 is 40ms faster than 1.1 but finds slightly fewer eyes
+     static const double EYE_SCALE_FACTOR   = 1.2;
+@@ -262,19 +262,19 @@
+     Rect leftrect(EyeSearchRect(eyaw, facerect, false));
+ 
+     if (leftrect.width)
+-        leyes = Detect(img, &leye_det_g, &leftrect,
++        leyes = Detect(img, &(detectors.leye_det_g), &leftrect,
+                        EYE_SCALE_FACTOR, EYE_MIN_NEIGHBORS, EYE_DETECTOR_FLAGS,
+                        facerect.width / 10);
+ 
+     Rect rightrect(EyeSearchRect(eyaw, facerect, true));
+ 
+     if (rightrect.width)
+-        reyes = Detect(img, &reye_det_g, &rightrect,
++        reyes = Detect(img, &(detectors.reye_det_g), &rightrect,
+                        EYE_SCALE_FACTOR, EYE_MIN_NEIGHBORS, EYE_DETECTOR_FLAGS,
+                        facerect.width / 10);
+ }
+ 
+-static void DetectAllMouths(
++static void DetectAllMouths(StasmData& detectors, 
+     vec_Rect&       mouths,      // out
+     const Image&    img,         // in
+     EYAW            eyaw,        // in
+@@ -284,7 +284,7 @@
+     const vec_Rect& leyes,       // in
+     const vec_Rect& reyes)       // in
+ {
+-    CV_Assert(!mouth_det_g.empty()); // detector initialized?
++    CV_Assert(!detectors.mouth_det_g.empty()); // detector initialized?
+ 
+     static const double MOUTH_SCALE_FACTOR   = 1.2; // less false pos with 1.2 than 1.1
+     static const int    MOUTH_MIN_NEIGHBORS  = 5;   // less false pos with 5 than 3
+@@ -294,7 +294,7 @@
+                               eyaw, ileft_best, iright_best, leyes, reyes));
+ 
+     mouths =
+-        Detect(img, &mouth_det_g, &mouth_rect,
++        Detect(img, &(detectors.mouth_det_g), &mouth_rect,
+                MOUTH_SCALE_FACTOR, MOUTH_MIN_NEIGHBORS, MOUTH_DETECTOR_FLAGS,
+                facerect.width / 10);
+ }
+@@ -664,7 +664,7 @@
+     y = featrect.y + featrect.height / 2;
+ }
+ 
+-void DetectEyesAndMouth(  // use OpenCV detectors to find the eyes and mouth
++void DetectEyesAndMouth(StasmData& detectors,  // use OpenCV detectors to find the eyes and mouth
+     DetPar&       detpar, // io: eye and mouth fields updated, other fields untouched
+     const Image&  img)    // in: ROI around face (already rotated if necessary)
+ {
+@@ -679,9 +679,9 @@
+     detpar.rex = detpar.rey = INVALID;
+     vec_Rect leyes, reyes;
+     int ileft_best = -1, iright_best = -1; // indices into leyes and reyes
+-    if (!leye_det_g.empty()) // do we need the eyes? (depends on model estart field)
++    if (!detectors.leye_det_g.empty()) // do we need the eyes? (depends on model estart field)
+     {
+-        DetectAllEyes(leyes, reyes,
++        DetectAllEyes(detectors, leyes, reyes,
+                       img, detpar.eyaw, facerect);
+ 
+         SelectEyes(ileft_best, iright_best,
+@@ -698,10 +698,10 @@
+     // possibly get the mouth
+ 
+     detpar.mouthx = detpar.mouthy = INVALID;  // mark mouth as unavailable
+-    if (!mouth_det_g.empty()) // do we need the mouth? (depends on model estart field)
++    if (!detectors.mouth_det_g.empty()) // do we need the mouth? (depends on model estart field)
+     {
+         vec_Rect mouths;
+-        DetectAllMouths(mouths,
++        DetectAllMouths(detectors, mouths,
+                         img, detpar.eyaw, facerect,
+                         ileft_best, iright_best, leyes, reyes);
+ 
+Index: stasm4-4.0.0/stasm/eyedet.h
+===================================================================
+--- stasm4-4.0.0.orig/stasm/eyedet.h	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/eyedet.h	2013-12-19 17:38:35.000000000 -0500
+@@ -5,13 +5,15 @@
+ #ifndef STASM_EYEDET_H
+ #define STASM_EYEDET_H
+ 
++#include "stasm_lib.h"
++
+ namespace stasm
+ {
+-void OpenEyeMouthDetectors(  // possibly open OpenCV eye detectors and mouth detector
++void OpenEyeMouthDetectors(StasmData& detectors,  // possibly open OpenCV eye detectors and mouth detector
+     const vec_Mod& mods,     // in: the ASM models (used to see if we need eyes or mouth)
+     const char*    datadir); // in
+ 
+-void DetectEyesAndMouth(     // use OpenCV detectors to find the eyes and mouth
++void DetectEyesAndMouth(StasmData& detectors,     // use OpenCV detectors to find the eyes and mouth
+     DetPar&      detpar,     // io: eye and mouth fields updated, other fields untouched
+     const Image& img);       // in: ROI around face (already rotated if necessary)
+ 
+Index: stasm4-4.0.0/stasm/faceroi.cpp
+===================================================================
+--- stasm4-4.0.0.orig/stasm/faceroi.cpp	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/faceroi.cpp	2013-12-19 17:38:35.000000000 -0500
+@@ -3,6 +3,7 @@
+ // Copyright (C) 2005-2013, Stephen Milborrow
+ 
+ #include "stasm.h"
++#include <opencv2/imgproc/imgproc.hpp>
+ 
+ namespace stasm
+ {
+@@ -89,7 +90,7 @@
+     if (Valid(detpar.rot) && detpar.rot)
+     {
+         // rotate eyes and mouth
+-        const MAT rotmat = getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
++        const MAT rotmat = cv::getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
+                                                float(detpar_roi.y)),
+                                                -detpar.rot, 1.);
+         AlignShapeInPlace(eyemouth_shape, rotmat);
+@@ -127,7 +128,7 @@
+ 
+     if (Valid(detpar.rot) && detpar.rot)
+     {
+-        const MAT rotmat = getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
++        const MAT rotmat = cv::getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
+                                                float(detpar_roi.y)),
+                                                -detpar.rot,
+                                                1.);
+@@ -151,7 +152,7 @@
+         outshape = FlipShape(outshape, face_roi.cols);
+     if (Valid(detpar.rot) && detpar.rot)
+     {
+-        const MAT rotmat = getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
++        const MAT rotmat = cv::getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
+                                                float(detpar_roi.y)),
+                                                detpar.rot, 1.);
+         outshape = AlignShape(outshape, rotmat);
+@@ -197,8 +198,8 @@
+         face_roi = Image(img, rect_roi);
+ 
+     else // rotate image so face is upright, results go into face_roi
+-        warpAffine(Image(img, rect_roi), face_roi,
+-                   getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
++        cv::warpAffine(Image(img, rect_roi), face_roi,
++                   cv::getRotationMatrix2D(cv::Point2f(float(detpar_roi.x),
+                                                    float(detpar_roi.y)),
+                                        -detpar.rot, 1.),
+                    cv::Size(face_roi.cols, face_roi.rows),
+Index: stasm4-4.0.0/stasm/landmarks.h
+===================================================================
+--- stasm4-4.0.0.orig/stasm/landmarks.h	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/landmarks.h	2013-12-19 17:38:35.000000000 -0500
+@@ -5,6 +5,8 @@
+ #ifndef STASM_LANDMARKS_H
+ #define STASM_LANDMARKS_H
+ 
++#include "stasm_constants.h"
++
+ namespace stasm
+ {
+ struct LANDMARK_INFO  // landmark information
+Index: stasm4-4.0.0/stasm/misc.cpp
+===================================================================
+--- stasm4-4.0.0.orig/stasm/misc.cpp	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/misc.cpp	2013-12-19 17:38:35.000000000 -0500
+@@ -4,6 +4,7 @@
+ 
+ #include "stasm.h"
+ #include <sys/stat.h>
++#include <opencv2/core/core_c.h>
+ 
+ namespace stasm
+ {
+Index: stasm4-4.0.0/stasm/misc.h
+===================================================================
+--- stasm4-4.0.0.orig/stasm/misc.h	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/misc.h	2013-12-19 17:38:35.000000000 -0500
+@@ -5,6 +5,9 @@
+ #ifndef STASM_MISC_H
+ #define STASM_MISC_H
+ 
++#include <opencv2/core/core.hpp>
++#include <opencv2/objdetect/objdetect.hpp>
++
+ namespace stasm
+ {
+ using cv::Rect;
+Index: stasm4-4.0.0/stasm/pinstart.cpp
+===================================================================
+--- stasm4-4.0.0.orig/stasm/pinstart.cpp	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/pinstart.cpp	2013-12-19 17:38:35.000000000 -0500
+@@ -3,6 +3,7 @@
+ // Copyright (C) 2005-2013, Stephen Milborrow
+ 
+ #include "stasm.h"
++#include <opencv2/imgproc/imgproc.hpp>
+ 
+ namespace stasm
+ {
+Index: stasm4-4.0.0/stasm/print.cpp
+===================================================================
+--- stasm4-4.0.0.orig/stasm/print.cpp	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/print.cpp	2013-12-19 17:38:35.000000000 -0500
+@@ -7,11 +7,11 @@
+ 
+ namespace stasm
+ {
+-bool print_g;   // true to allow output to stdout (but error msgs always printed)
++bool print_g = false;   // true to allow output to stdout (but error msgs always printed)
+ 
+-bool trace_g;   // true to trace Stasm internal operation
++bool trace_g = false;   // true to trace Stasm internal operation
+ 
+-static FILE* logfile_g;  // lprintfs go to this log file as well as stdout
++static FILE* logfile_g = NULL;  // lprintfs go to this log file as well as stdout
+ 
+ //-----------------------------------------------------------------------------
+ 
+Index: stasm4-4.0.0/stasm/shapemod.h
+===================================================================
+--- stasm4-4.0.0.orig/stasm/shapemod.h	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/shapemod.h	2013-12-19 17:38:35.000000000 -0500
+@@ -5,6 +5,10 @@
+ #ifndef STASM_SHAPEMODEL_H
+ #define STASM_SHAPEMODEL_H
+ 
++#include "stasm_lib.h"
++#include "shapehacks.h"
++#include "stasm_constants.h"
++
+ namespace stasm
+ {
+ class ShapeMod
+Index: stasm4-4.0.0/stasm/startshape.cpp
+===================================================================
+--- stasm4-4.0.0.orig/stasm/startshape.cpp	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/startshape.cpp	2013-12-19 17:38:35.000000000 -0500
+@@ -363,7 +363,7 @@
+ // (Note also that the ROI is flipped if necessary because our three-quarter
+ // models are right facing and the face may be left facing.)
+ 
+-static void StartShapeAndRoi(  // we have the facerect, now get the rest
++static void StartShapeAndRoi(StasmData& detectors,  // we have the facerect, now get the rest
+     Shape&         startshape, // out: the start shape we are looking for
+     Image&         face_roi,   // out: ROI around face, possibly rotated upright
+     DetPar&        detpar_roi, // out: detpar wrt to face_roi
+@@ -377,7 +377,7 @@
+     FaceRoiAndDetPar(face_roi, detpar_roi,    // get ROI around face
+                      img, detpar, false);
+ 
+-    DetectEyesAndMouth(detpar_roi,            // use OpenCV eye and mouth detectors
++    DetectEyesAndMouth(detectors, detpar_roi,            // use OpenCV eye and mouth detectors
+                        face_roi);
+ 
+     // Some face detectors return the face rotation, some don't (in
+@@ -400,7 +400,7 @@
+             FaceRoiAndDetPar(face_roi, detpar_roi,
+                              img, detpar, false);
+ 
+-            DetectEyesAndMouth(detpar_roi,    // use OpenCV eye and mouth detectors
++            DetectEyesAndMouth(detectors, detpar_roi,    // use OpenCV eye and mouth detectors
+                                face_roi);
+         }
+     }
+@@ -440,7 +440,7 @@
+ // ASM models are for right-facing faces.  For frontal faces (the yaw00
+ // model), faces are not flipped.
+ 
+-bool NextStartShapeAndRoi(     // use face detector results to estimate start shape
++bool NextStartShapeAndRoi(StasmData& detectors,     // use face detector results to estimate start shape
+     Shape&         startshape, // out: the start shape
+     Image&         face_roi,   // out: ROI around face, possibly rotated upright
+     DetPar&        detpar_roi, // out: detpar wrt to face_roi
+@@ -453,7 +453,7 @@
+     detpar = facedet.NextFace_();  // get next face's detpar from the face det
+ 
+     if (Valid(detpar.x))           // NextFace_ returned a face?
+-        StartShapeAndRoi(startshape, face_roi, detpar_roi, detpar, img, mods);
++        StartShapeAndRoi(detectors, startshape, face_roi, detpar_roi, detpar, img, mods);
+ 
+     return Valid(detpar.x);
+ }
+Index: stasm4-4.0.0/stasm/startshape.h
+===================================================================
+--- stasm4-4.0.0.orig/stasm/startshape.h	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/startshape.h	2013-12-19 17:38:35.000000000 -0500
+@@ -9,7 +9,7 @@
+ {
+ // get the start shape for the next face in the image, and the ROI around it
+ 
+-bool NextStartShapeAndRoi(     // use face detector results to estimate start shape
++bool NextStartShapeAndRoi(StasmData& detectors,     // use face detector results to estimate start shape
+     Shape&         startshape, // out: the start shape we are looking for
+     Image&         face_roi,   // out: ROI around face, possibly rotated upright
+     DetPar&        detpar_roi, // out: detpar wrt to face_roi
+Index: stasm4-4.0.0/stasm/stasm.h
+===================================================================
+--- stasm4-4.0.0.orig/stasm/stasm.h	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/stasm.h	2013-12-19 17:38:35.000000000 -0500
+@@ -30,7 +30,7 @@
+ #pragma warning(disable:4267)
+ #endif
+ 
+-#include "opencv/cv.h"
++#include <opencv2/core/core.hpp>
+ 
+ #if _MSC_VER >= 1200
+ #pragma warning(default:4996) // re-enable the warnings disabled above
+@@ -38,7 +38,7 @@
+ #endif
+ 
+ #if TRACE_IMAGES              // will be 0 unless debugging
+-#include "opencv/highgui.h"   // need imwrite
++#include <opencv2/highgui/highgui.hpp>   // need imwrite
+ #endif
+ 
+ #include <stdio.h>
+@@ -71,8 +71,8 @@
+ #include "asm.h"
+ 
+ #if MOD_1   // released version of Stasm
+-    #include "../stasm/MOD_1/facedet.h"
+-    #include "../stasm/MOD_1/initasm.h"
++    #include "MOD_1/facedet.h"
++    #include "MOD_1/initasm.h"
+ #elif MOD_3 // experimental versions
+     #include "../stasm/MOD_3/facedet.h"
+     #include "../stasm/MOD_3/initasm.h"
+Index: stasm4-4.0.0/stasm/stasm_constants.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/stasm/stasm_constants.h	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,14 @@
++/* 
++ * File:   stasm_constants.h
++ * Author: mchaberski
++ *
++ * Created on November 25, 2013, 11:33 AM
++ */
++
++#ifndef STASM_CONSTANTS_H
++#define	STASM_CONSTANTS_H
++
++static const int stasm_NLANDMARKS = 77; // number of landmarks
++
++#endif	/* STASM_CONSTANTS_H */
++
+Index: stasm4-4.0.0/stasm/stasm_lib.cpp
+===================================================================
+--- stasm4-4.0.0.orig/stasm/stasm_lib.cpp	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/stasm_lib.cpp	2013-12-19 17:38:35.000000000 -0500
+@@ -3,22 +3,36 @@
+ // Copyright (C) 2005-2013, Stephen Milborrow
+ 
+ #include "stasm.h"
++#include "stasm_lib.h"
+ 
+ using namespace stasm;
+ 
+ const char* const stasm_VERSION = STASM_VERSION;
+ 
+-static vec_Mod mods_g;    // the ASM model(s)
+-static FaceDet facedet_g; // the face detector
+-static Image   img_g;     // the current image
+ 
+ //-----------------------------------------------------------------------------
+ 
+ namespace stasm
+ {
+-static void CheckStasmInit(void)
++    
++    const char* StasmUtils::GetModelsDataDir()
++    {
++#ifndef _WIN32
++#ifndef SHARE_DIR_PARENT
++#define SHARE_DIR_PARENT "/usr"
++#endif
++#ifndef OPENCV_HAARCASCADES_DIR
++#define OPENCV_HAARCASCADES_DIR SHARE_DIR_PARENT "/share/opencv/haarcascades"
++#endif        
++        return OPENCV_HAARCASCADES_DIR;
++#else
++        return "C:/OpenCV/data/haarcascades";
++#endif
++    }
++    
++static void CheckStasmInit(StasmData& detectors)
+ {
+-    if (mods_g.empty())
++    if (detectors.mods_g.empty())
+         Err("Models not initialized (missing call to stasm_init?)");
+ }
+ 
+@@ -57,7 +71,7 @@
+ 
+ //-----------------------------------------------------------------------------
+ 
+-int stasm_init_ext(        // extended version of stasm_init
++int stasm_init_ext(stasm::StasmData& detectors,        // extended version of stasm_init
+     const char* datadir,   // in: directory of face detector files
+     int         trace,     // in: 0 normal use, 1 trace to stdout and stasm.log
+     void*       detparams) // in: NULL or face detector parameters
+@@ -68,7 +82,7 @@
+     {
+         print_g = (trace != 0);
+         trace_g = (trace != 0);
+-        if (mods_g.empty()) // not yet initialized?
++        if (detectors.mods_g.empty()) // not yet initialized?
+         {
+             if (trace)
+             {
+@@ -80,11 +94,11 @@
+             lprintf("Stasm version %s%s\n",
+                     stasm_VERSION, trace? "  Logging to stasm.log": "");
+             CV_Assert(datadir && datadir[0] && STRNLEN(datadir, SLEN) < SLEN);
+-            InitMods(mods_g, datadir); // init ASM model(s)
+-            facedet_g.OpenFaceDetector_(datadir, detparams);
+-            OpenEyeMouthDetectors(mods_g, datadir);
++            InitMods(detectors.mods_g, datadir); // init ASM model(s)
++            detectors.face_detector.OpenFaceDetector_(detectors.facedet_g, datadir, detparams);
++            OpenEyeMouthDetectors(detectors, detectors.mods_g, datadir);
+         }
+-        CheckStasmInit();
++        CheckStasmInit(detectors);
+     }
+     catch(...)
+     {
+@@ -94,14 +108,14 @@
+     return returnval;
+ }
+ 
+-int stasm_init(            // call once, at bootup (to read models from disk)
++int stasm_init(stasm::StasmData& detectors,          // call once, at bootup (to read models from disk)
+     const char* datadir,   // in: directory of face detector files
+     int         trace)     // in: 0 normal use, 1 trace to stdout and stasm.log
+ {
+-    return stasm_init_ext(datadir, trace, NULL);
++    return stasm_init_ext(detectors, datadir, trace, NULL);
+ }
+ 
+-int stasm_open_image_ext(  // extended version of stasm_open_image
++int stasm_open_image_ext(stasm::StasmData& detectors,   // extended version of stasm_open_image
+     const char* img,       // in: gray image data, top left corner at 0,0
+     int         width,     // in: image width
+     int         height,    // in: image height
+@@ -114,16 +128,17 @@
+     CatchOpenCvErrs();
+     try
+     {
+-        CV_Assert(imgpath && STRNLEN(imgpath, SLEN) < SLEN);
++        bool pathok = imgpath && STRNLEN(imgpath, SLEN) < SLEN;
++        CV_Assert(pathok);
+         CV_Assert(multiface == 0 || multiface == 1);
+         CV_Assert(minwidth >= 1 && minwidth <= 100);
+ 
+-        CheckStasmInit();
++        CheckStasmInit(detectors);
+ 
+-        img_g = Image(height, width,(unsigned char*)img);
++        detectors.img_g = Image(height, width,(unsigned char*)img);
+ 
+         // call the face detector to detect the face rectangle(s)
+-        facedet_g.DetectFaces_(img_g, imgpath, multiface == 1, minwidth, user);
++        detectors.face_detector.DetectFaces_(detectors.facedet_g, detectors.img_g, imgpath, multiface == 1, minwidth, user);
+     }
+     catch(...)
+     {
+@@ -133,7 +148,7 @@
+     return returnval;
+ }
+ 
+-int stasm_open_image(      // call once per image, detect faces
++int stasm_open_image(stasm::StasmData& detectors,      // call once per image, detect faces
+     const char* img,       // in: gray image data, top left corner at 0,0
+     int         width,     // in: image width
+     int         height,    // in: image height
+@@ -141,11 +156,11 @@
+     int         multiface, // in: 0=return only one face, 1=allow multiple faces
+     int         minwidth)  // in: min face width as percentage of img width
+ {
+-    return stasm_open_image_ext(img, width, height, imgpath,
++    return stasm_open_image_ext(detectors, img, width, height, imgpath,
+                                 multiface, minwidth, NULL);
+ }
+ 
+-int stasm_search_auto_ext( // extended version of stasm_search_auto
++int stasm_search_auto_ext(StasmData& detectors, // extended version of stasm_search_auto
+     int*   foundface,      // out: 0=no more faces, 1=found face
+     float* landmarks,      // out: x0, y0, x1, y1, ..., caller must allocate
+     float* estyaw)         // out: NULL or pointer to estimated yaw
+@@ -155,9 +170,9 @@
+     CatchOpenCvErrs();
+     try
+     {
+-        CheckStasmInit();
++        CheckStasmInit(detectors);
+ 
+-        if (img_g.rows == 0 || img_g.cols == 0)
++        if (detectors.img_g.rows == 0 || detectors.img_g.cols == 0)
+             Err("Image not open (missing call to stasm_open_image?)");
+ 
+         Shape shape;       // the shape with landmarks
+@@ -167,8 +182,8 @@
+ 
+         // Get the start shape for the next face in the image, and the ROI around it.
+         // The shape will be wrt the ROI frame.
+-        if (NextStartShapeAndRoi(shape, face_roi, detpar_roi, detpar,
+-                                 img_g, mods_g, facedet_g))
++        if (NextStartShapeAndRoi(detectors, shape, face_roi, detpar_roi, detpar,
++                                 detectors.img_g, detectors.mods_g, detectors.face_detector))
+         {
+             // now working with maybe flipped ROI and start shape in ROI frame
+             *foundface = 1;
+@@ -177,10 +192,10 @@
+                          "auto_start");
+ 
+             // select an ASM model based on the face's yaw
+-            const int imod = ABS(EyawAsModIndex(detpar.eyaw, mods_g));
++            const int imod = ABS(EyawAsModIndex(detpar.eyaw, detectors.mods_g));
+ 
+             // do the actual ASM search
+-            shape = mods_g[imod]->ModSearch_(shape, face_roi);
++            shape = detectors.mods_g[imod]->ModSearch_(shape, face_roi);
+ 
+             shape = RoiShapeToImgFrame(shape, face_roi, detpar_roi, detpar);
+             // now working with non flipped start shape in image frame
+@@ -198,14 +213,14 @@
+     return returnval;
+ }
+ 
+-int stasm_search_auto( // call repeatedly to find all faces
++int stasm_search_auto(StasmData& detectors, // call repeatedly to find all faces
+     int*   foundface,  // out: 0=no more faces, 1=found face
+     float* landmarks)  // out: x0, y0, x1, y1, ..., caller must allocate
+ {
+-    return stasm_search_auto_ext(foundface, landmarks, NULL);
++    return stasm_search_auto_ext(detectors, foundface, landmarks, NULL);
+ }
+ 
+-int stasm_search_single(   // wrapper for stasm_search_auto and friends
++int stasm_search_single(StasmData& detectors,   // wrapper for stasm_search_auto and friends
+     int*        foundface, // out: 0=no face, 1=found face
+     float*      landmarks, // out: x0, y0, x1, y1, ..., caller must allocate
+     const char* img,       // in: gray image data, top left corner at 0,0
+@@ -214,17 +229,17 @@
+     const char* imgpath,   // in: image path, used only for err msgs and debug
+     const char* datadir)   // in: directory of face detector files
+ {
+-    if (!stasm_init(datadir, 0 /*trace*/))
++    if (!stasm_init(detectors, datadir, 0 /*trace*/))
+         return false;
+ 
+-    if (!stasm_open_image(img, width, height, imgpath,
++    if (!stasm_open_image(detectors, img, width, height, imgpath,
+                           0 /*multiface*/, 10 /*minwidth*/))
+         return false;
+ 
+-    return stasm_search_auto(foundface, landmarks);
++    return stasm_search_auto(detectors, foundface, landmarks);
+ }
+ 
+-int stasm_search_pinned(    // call after the user has pinned some points
++int stasm_search_pinned( StasmData& detectors,   // call after the user has pinned some points
+     float*       landmarks, // out: x0, y0, x1, y1, ..., caller must allocate
+     const float* pinned,    // in: pinned landmarks (0,0 points not pinned)
+     const char*  img,       // in: gray image data, top left corner at 0,0
+@@ -237,9 +252,9 @@
+     try
+     {
+         CV_Assert(imgpath && STRNLEN(imgpath, SLEN) < SLEN);
+-        CheckStasmInit();
++        CheckStasmInit(detectors);
+ 
+-        img_g = Image(height, width, (unsigned char*)img);
++        detectors.img_g = Image(height, width, (unsigned char*)img);
+ 
+         const Shape pinnedshape(LandmarksAsShape(pinned));
+ 
+@@ -250,12 +265,12 @@
+         DetPar detpar;     // params returned by pseudo face det, in img frame
+ 
+         PinnedStartShapeAndRoi(shape, face_roi, detpar_roi, detpar, pinned_roi,
+-                               img_g, mods_g, pinnedshape);
++                               detectors.img_g, detectors.mods_g, pinnedshape);
+ 
+         // now working with maybe flipped ROI and start shape in ROI frame
+-        const int imod = ABS(EyawAsModIndex(detpar.eyaw, mods_g));
++        const int imod = ABS(EyawAsModIndex(detpar.eyaw, detectors.mods_g));
+ 
+-        shape = mods_g[imod]->ModSearch_(shape, face_roi, &pinned_roi); // ASM search
++        shape = detectors.mods_g[imod]->ModSearch_(shape, face_roi, &pinned_roi); // ASM search
+ 
+         shape = RoiShapeToImgFrame(shape, face_roi, detpar_roi, detpar);
+         // now working with non flipped start shape in image frame
+Index: stasm4-4.0.0/stasm/stasm_lib.h
+===================================================================
+--- stasm4-4.0.0.orig/stasm/stasm_lib.h	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/stasm_lib.h	2013-12-19 17:38:35.000000000 -0500
+@@ -59,20 +59,65 @@
+ //
+ //-----------------------------------------------------------------------------
+ 
++/**
++ * 2013-12-19 Modifications (c) 2013 Michael Chaberski, released under same
++ *            license as original STASM.
++ */
++
+ #ifndef STASM_LIB_H
+ #define STASM_LIB_H
+ 
+-static const int stasm_NLANDMARKS = 77; // number of landmarks
++#include <opencv2/objdetect/objdetect.hpp>
++
++#include "MOD_1/facedet.h"
++#include "misc.h"
++#include <vector>
++
++using std::vector;
++
++namespace stasm
++{
++
++    class Mod;
++    typedef vector<const Mod*> vec_Mod; // vector of ASM models, one for each yaw range
++    
++    class StasmData
++    {
++    public:
++        StasmData() : facedet_g(), leye_det_g(), reye_det_g(), mouth_det_g() {}
++        virtual ~StasmData() {
++            
++        }
++        cv::CascadeClassifier facedet_g;  // the face detector
++        cv::CascadeClassifier leye_det_g;  // left eye detector
++        cv::CascadeClassifier reye_det_g;  // right eye detector
++        cv::CascadeClassifier mouth_det_g; // mouth detector
++        vec_Mod mods_g;    // the ASM model(s)
++        FaceDet face_detector; // the face detector
++        Image   img_g;     // the current image
++        
++    };
++    
++    class StasmUtils
++    {
++    public:
++        static const char* GetModelsDataDir();
++    private:
++        StasmUtils();
++    };
++}
++
++using stasm::StasmData;
+ 
+ extern const char* const stasm_VERSION;
+ 
+ extern "C"
+-int stasm_init(              // call once, at bootup
++int stasm_init(StasmData& detectors,              // call once, at bootup
+     const char*  datadir,    // in: directory of face detector files
+     int          trace);     // in: 0 normal use, 1 trace to stdout and stasm.log
+ 
+ extern "C"
+-int stasm_open_image(        // call once per image, detect faces
++int stasm_open_image(StasmData& detectors,        // call once per image, detect faces
+     const char*  img,        // in: gray image data, top left corner at 0,0
+     int          width,      // in: image width
+     int          height,     // in: image height
+@@ -81,12 +126,12 @@
+     int          minwidth);  // in: min face width as percentage of img width
+ 
+ extern "C"
+-int stasm_search_auto(       // call repeatedly to find all faces
++int stasm_search_auto( StasmData& detectors,      // call repeatedly to find all faces
+     int*         foundface,  // out: 0=no more faces, 1=found face
+     float*       landmarks); // out: x0, y0, x1, y1, ..., caller must allocate
+ 
+ extern "C"
+-int stasm_search_single(     // wrapper for stasm_search_auto and friends
++int stasm_search_single(StasmData& detectors,       // wrapper for stasm_search_auto and friends
+     int*         foundface,  // out: 0=no face, 1=found face
+     float*       landmarks,  // out: x0, y0, x1, y1, ..., caller must allocate
+     const char*  img,        // in: gray image data, top left corner at 0,0
+Index: stasm4-4.0.0/stasm/stasm_lib_ext.h
+===================================================================
+--- stasm4-4.0.0.orig/stasm/stasm_lib_ext.h	2013-12-19 17:38:35.000000000 -0500
++++ stasm4-4.0.0/stasm/stasm_lib_ext.h	2013-12-19 17:38:35.000000000 -0500
+@@ -4,14 +4,16 @@
+ #ifndef STASM_LIB_EXT_H
+ #define STASM_LIB_EXT_H
+ 
++#include "stasm_lib.h"
++
+ extern "C"                   // extended version of stasm_init
+-int stasm_init_ext(          // call once, at bootup
++int stasm_init_ext(stasm::StasmData& detectors,          // call once, at bootup
+     const char*  datadir,    // in: directory of face detector files
+     int          trace,      // in: 0 normal use, 1 trace to stdout and stasm.log
+     void*        detparams); // in: NULL or face detector parameters
+ 
+ extern "C"                   // extended version of stasm_open_image
+-int stasm_open_image_ext(    // call once per image, detect faces
++int stasm_open_image_ext(stasm::StasmData& detectors,     // call once per image, detect faces
+     const char*  img,        // in: gray image data, top left corner at 0,0
+     int          width,      // in: image width
+     int          height,     // in: image height
+@@ -21,7 +23,7 @@
+     void*        user);      // in: NULL or pointer to user abort func
+ 
+ extern "C"
+-int stasm_search_auto_ext(   // extended version of stasm_search_auto
++int stasm_search_auto_ext(stasm::StasmData& detectors,    // extended version of stasm_search_auto
+     int*         foundface,  // out: 0=no more faces, 1=found face
+     float*       landmarks,  // out: x0, y0, x1, y1, ..., caller must allocate
+     float*       estyaw);    // out: NULL or pointer to estimated yaw
+Index: stasm4-4.0.0/tests/data/test_stasm_lib_testface_output.txt
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ stasm4-4.0.0/tests/data/test_stasm_lib_testface_output.txt	2013-12-19 17:38:35.000000000 -0500
+@@ -0,0 +1,77 @@
++47 87
++49 123
++53 156
++64 194
++85 226
++113 253
++145 260
++177 254
++208 228
++232 194
++243 162
++251 131
++256 93
++201 -13
++148 -26
++96 -17
++111 54
++88 49
++66 60
++88 60
++109 65
++132 70
++178 73
++200 59
++223 55
++242 67
++222 65
++201 69
++206 77
++100 73
++120 92
++110 83
++99 79
++90 82
++80 88
++89 95
++99 98
++109 96
++99 87
++203 91
++185 95
++196 87
++206 83
++216 86
++225 94
++215 99
++206 102
++196 100
++170 126
++153 125
++136 124
++132 155
++153 148
++171 157
++189 151
++178 159
++151 167
++124 157
++115 149
++98 186
++120 183
++139 183
++149 184
++160 184
++177 186
++197 191
++170 193
++149 194
++127 191
++127 195
++148 199
++170 197
++183 204
++166 210
++147 211
++129 208
++112 200

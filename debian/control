@@ -1,0 +1,29 @@
+Source: stasm4
+Priority: optional
+Maintainer: Michael Chaberski <mchaberski+dev@gmail.com>
+Build-Depends: debhelper (>= 9), libopencv-imgproc-dev (>= 2.4), libopencv-objdetect-dev (>= 2.4)
+Standards-Version: 3.9.5
+Section: libs
+Homepage: http://www.milbo.users.sonic.net/stasm/download.html
+#Vcs-Git: git://git.debian.org/collab-maint/stasm4.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/stasm4.git;a=summary
+
+Package: libstasm4-dev
+Section: libdevel
+Architecture: any
+Depends: libstasm4 (= ${binary:Version})
+Description: STASM face landmark detection library development files
+ Development files for the STASM face landmark detection library. 
+ This package contains the C++ headers and compiled static library.
+
+Package: libstasm4
+Section: libs
+Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}, libopencv-imgproc2.4, libopencv-objdetect2.4
+Description: STASM face landmark detection library
+ Stasm is a C++ software library for finding features in faces. You 
+ give it an image of a face and it returns the positions of the facial 
+ features. Stasm is designed to work on front views of faces with
+ neutral expressions.

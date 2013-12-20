@@ -1,0 +1,28 @@
+stasm4 (4.0.0-1) unstable; urgency=low
+
+  * Initial release (Closes: #1)  <nnnn is the bug number of your ITP>
+  * removed doc/LICENSE.txt because it's a duplicate of LICENSE in root
+  * removed README.txt because it's been superceded by README.md
+  * removed Windows-related stuff
+  * added netbeans project ignorable directories and auto-generated 
+  files to .gitignore
+  * removed haarcascade data files because package depends on opencv; 
+  moved test data to tests/data
+  * changed use of global CascadeClassifier and models vectors to 
+  instance variables (as members of class StasmData)
+  * made implicit include directives explicit
+  * revised opencv include directives to use opencv2-style include 
+  paths
+  * added explicit cv:: to calls to functions in cv namespace
+  * removed global static variables; now using StasmData objects 
+  instead
+  * added stasm_constants.h to define num landmarks constant
+  * initialized static global debugging variables to false
+  * added test run output from upstream binary as reference data for 
+  tests
+  * added netbeans project that builds modified upstream sources
+  * added basic smoke test to netbeans project
+  * added root makefile that defers to netbeans project makefile
+  * added copyright notice regarding modifications to original sources
+
+ -- Michael Chaberski <mchaberski+dev@gmail.com>  Thu, 19 Dec 2013 13:51:28 -0500

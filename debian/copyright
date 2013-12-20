@@ -1,0 +1,100 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: stasm
+Source: http://www.milbo.users.sonic.net/stasm/download.html
+
+Files: *
+Copyright: 2005-2013, Stephen Milborrow
+License: BSD-2-clause
+ All rights reserved.
+ .
+ Redistribution in source and binary forms, with or
+ without modification, is permitted provided that the following
+ conditions are met:
+ .
+ * Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimers.
+ .
+ * Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimers in the documentation
+   and/or other materials provided with the distribution.
+ .
+ A SIFT patent restriction may be in conflict with the copyright
+ freedoms granted by this license.  This license does not give you
+ permission to infringe patents.
+ .
+ This software is provided by the copyright holders and contributors "as is" and
+ any express or implied warranties, including, but not limited to, the implied
+ warranties of merchantability and fitness for a particular purpose are disclaimed.
+ In no event shall the copyright holder be liable for any direct,
+ indirect, incidental, special, exemplary, or consequential damages
+ (including, but not limited to, procurement of substitute goods or services;
+ loss of use, data, or profits; or business interruption) however caused
+ and on any theory of liability, whether in contract, strict liability,
+ or tort (including negligence or otherwise) arising in any way out of
+ the use of this software, even if advised of the possibility of such damage.
+ .
+ Note that Stasm versions prior to version 4.0.0 had a different license.
+
+Files: debian/*
+Copyright: 2013 Michael Chaberski <mchaberski+dev@gmail.com>
+License: Apache
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ .
+ http://www.apache.org/licenses/LICENSE-2.0
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ .
+ On Debian systems, the complete text of the Apache License, Version 2.0
+ can be found in "/usr/share/common-licenses/Apache".
+
+Files: tools/cmp.exe tools/cp.exe tools/egrep.exe tools/mdiff.exe tools/mkdir.exe tools/mv.exe tools/rm.exe tools/which.exe
+Copyright: 2013 Free Software Foundation <http://www.fsf.org>
+License: GPL
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 2 of the License, or
+ (at your option) any later version. 
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Files: data/*.xml
+Copyright: 2000-2008, Intel Corporation, all rights reserved.
+           2008-2011, Willow Garage Inc., all rights reserved.
+License: BSD-3-clause
+ Third party copyrights are property of their respective owners.
+ .
+ Redistribution and use in source and binary forms, with or without modification,
+ are permitted provided that the following conditions are met:
+ .
+ * Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+ .
+ * Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+ .
+ * The name of the copyright holders may not be used to endorse or promote products
+   derived from this software without specific prior written permission.
+ .
+ This software is provided by the copyright holders and contributors "as is" and
+ any express or implied warranties, including, but not limited to, the implied
+ warranties of merchantability and fitness for a particular purpose are disclaimed.
+ In no event shall the Intel Corporation or contributors be liable for any direct,
+ indirect, incidental, special, exemplary, or consequential damages
+ (including, but not limited to, procurement of substitute goods or services;
+ loss of use, data, or profits; or business interruption) however caused
+ and on any theory of liability, whether in contract, strict liability,
+ or tort (including negligence or otherwise) arising in any way out of
+ the use of this software, even if advised of the possibility of such damage.

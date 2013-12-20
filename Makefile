@@ -44,6 +44,9 @@ install-headers:
 install-shlibs: build-libs
 	$(MKDIR) -p $(LIBDIR)
 	$(INSTALL) -t $(LIBDIR) -m 0644 $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.so
+#	cp $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.so $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.so.0
+#	$(INSTALL) -t $(LIBDIR) -m 0644 $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.so.0
+#	ln -s libstasm4.so.0 $(LIBDIR)/libstasm4.so
 
 install-stlibs: build-libs
 	$(MKDIR) -p $(LIBDIR)

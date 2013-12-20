@@ -86,7 +86,7 @@ LDLIBSOPTIONS=-lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_objdetect
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT}: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -Wl,-soname,libstasm4.so.0 -shared -fPIC
+	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -Wl,-soname,libstasm4.so -shared -fPIC
 
 ${OBJECTDIR}/_ext/1480797537/facedet.o: ../../stasm/MOD_1/facedet.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/1480797537

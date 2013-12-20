@@ -11,6 +11,7 @@
             <make-dep-projects/>
             <sourceRootList>
                 <sourceRootElem>../../stasm</sourceRootElem>
+                <sourceRootElem>../../stasm</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>

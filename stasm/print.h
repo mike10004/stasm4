@@ -7,9 +7,9 @@
 
 namespace stasm
 {
-extern bool print_g;   // true to allow output to stdout
+extern const bool print_g;   // true to allow output to stdout
 
-extern bool trace_g;   // true to trace Stasm internal operation
+extern const bool trace_g;   // true to trace Stasm internal operation
 
 void OpenLogFile(void);
 void lputs(const char* s);

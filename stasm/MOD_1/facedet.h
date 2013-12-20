@@ -6,6 +6,7 @@
 #define STASM_FACEDET_H
 
 #include <opencv2/objdetect/objdetect.hpp>
+#include "../misc.h"
 
 namespace stasm
 {

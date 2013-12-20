@@ -30,10 +30,9 @@ namespace stasm
 #endif
     }
     
-static void CheckStasmInit(StasmData& detectors)
+static bool IsStasmInitialized(StasmData& detectors)
 {
-    if (detectors.mods_g.empty())
-        Err("Models not initialized (missing call to stasm_init?)");
+    return !detectors.mods_g.empty();
 }
 
 static void ShapeToLandmarks( // convert Shape to landmarks (float *)
@@ -71,19 +70,20 @@ static const Shape LandmarksAsShape( // return a Shape
 
 //-----------------------------------------------------------------------------
 
-int stasm_init_ext(stasm::StasmData& detectors,        // extended version of stasm_init
+StasmResult::Type stasm_init_ext(stasm::StasmData& detectors,        // extended version of stasm_init
     const char* datadir,   // in: directory of face detector files
-    int         trace,     // in: 0 normal use, 1 trace to stdout and stasm.log
+//    int         trace,     // in: 0 normal use, 1 trace to stdout and stasm.log
     void*       detparams) // in: NULL or face detector parameters
 {
-    int returnval = 1;     // assume success
+    StasmResult::Type returnval = StasmResult::UNDEFINED;     // assume success
     CatchOpenCvErrs();
     try
     {
-        print_g = (trace != 0);
-        trace_g = (trace != 0);
+//        print_g = (trace != 0);
+//        trace_g = (trace != 0);
         if (detectors.mods_g.empty()) // not yet initialized?
         {
+#ifdef STASM_TRACE
             if (trace)
             {
                 // Open a log file in the current directory (if possible).
@@ -93,87 +93,97 @@ int stasm_init_ext(stasm::StasmData& detectors,        // extended version of st
             }
             lprintf("Stasm version %s%s\n",
                     stasm_VERSION, trace? "  Logging to stasm.log": "");
+#endif
             CV_Assert(datadir && datadir[0] && STRNLEN(datadir, SLEN) < SLEN);
             InitMods(detectors.mods_g, datadir); // init ASM model(s)
             detectors.face_detector.OpenFaceDetector_(detectors.facedet_g, datadir, detparams);
             OpenEyeMouthDetectors(detectors, detectors.mods_g, datadir);
         }
-        CheckStasmInit(detectors);
+        if (!IsStasmInitialized(detectors)) {
+            returnval = StasmResult::INITIALIZATION_FAILED;
+        } else {
+            returnval = StasmResult::SUCCESS;
+        }
     }
     catch(...)
     {
-        returnval = 0; // a call was made to Err or a CV_Assert failed
+        returnval = StasmResult::UNDEFINED; // a call was made to Err or a CV_Assert failed
     }
     UncatchOpenCvErrs();
     return returnval;
 }
 
-int stasm_init(stasm::StasmData& detectors,          // call once, at bootup (to read models from disk)
-    const char* datadir,   // in: directory of face detector files
-    int         trace)     // in: 0 normal use, 1 trace to stdout and stasm.log
+StasmResult::Type stasm_init(stasm::StasmData& detectors,          // call once, at bootup (to read models from disk)
+    const char* datadir   // in: directory of face detector files
+    ) // MC removed trace argument    // in: 0 normal use, 1 trace to stdout and stasm.log
 {
-    return stasm_init_ext(detectors, datadir, trace, NULL);
+    return stasm_init_ext(detectors, datadir, NULL);
 }
 
-int stasm_open_image_ext(stasm::StasmData& detectors,   // extended version of stasm_open_image
+StasmResult::Type stasm_open_image_ext(stasm::StasmData& detectors,   // extended version of stasm_open_image
     const char* img,       // in: gray image data, top left corner at 0,0
     int         width,     // in: image width
     int         height,    // in: image height
     const char* imgpath,   // in: image path, used only for err msgs and debug
-    int         multiface, // in: 0=return only one face, 1=allow multiple faces
+    bool         multiface, // in: 0=return only one face, 1=allow multiple faces
     int         minwidth,  // in: min face width as percentage of img width
     void*       user)      // in: NULL or pointer to user abort func
 {
-    int returnval = 1;     // assume success
+    if (!IsStasmInitialized(detectors)) {
+        return StasmResult::NOT_INITIALIZED;
+    }
+    StasmResult::Type returnval = StasmResult::SUCCESS;     // assume success
     CatchOpenCvErrs();
     try
     {
         bool pathok = imgpath && STRNLEN(imgpath, SLEN) < SLEN;
         CV_Assert(pathok);
-        CV_Assert(multiface == 0 || multiface == 1);
         CV_Assert(minwidth >= 1 && minwidth <= 100);
 
-        CheckStasmInit(detectors);
+        
 
         detectors.img_g = Image(height, width,(unsigned char*)img);
 
         // call the face detector to detect the face rectangle(s)
-        detectors.face_detector.DetectFaces_(detectors.facedet_g, detectors.img_g, imgpath, multiface == 1, minwidth, user);
+        detectors.face_detector.DetectFaces_(detectors.facedet_g, detectors.img_g, imgpath, multiface, minwidth, user);
     }
     catch(...)
     {
-        returnval = 0; // a call was made to Err or a CV_Assert failed
+        returnval = StasmResult::UNDEFINED; // a call was made to Err or a CV_Assert failed
     }
     UncatchOpenCvErrs();
     return returnval;
 }
 
-int stasm_open_image(stasm::StasmData& detectors,      // call once per image, detect faces
+StasmResult::Type stasm_open_image(stasm::StasmData& detectors,      // call once per image, detect faces
     const char* img,       // in: gray image data, top left corner at 0,0
     int         width,     // in: image width
     int         height,    // in: image height
     const char* imgpath,   // in: image path, used only for err msgs and debug
-    int         multiface, // in: 0=return only one face, 1=allow multiple faces
+    bool         multiface, // in: 0=return only one face, 1=allow multiple faces
     int         minwidth)  // in: min face width as percentage of img width
 {
     return stasm_open_image_ext(detectors, img, width, height, imgpath,
                                 multiface, minwidth, NULL);
 }
 
-int stasm_search_auto_ext(StasmData& detectors, // extended version of stasm_search_auto
+StasmResult::Type stasm_search_auto_ext(StasmData& context, // extended version of stasm_search_auto
     int*   foundface,      // out: 0=no more faces, 1=found face
     float* landmarks,      // out: x0, y0, x1, y1, ..., caller must allocate
     float* estyaw)         // out: NULL or pointer to estimated yaw
 {
-    int returnval = 1;     // assume success
+    StasmResult::Type returnval = StasmResult::SUCCESS;     // assume success
     *foundface = 0;        // but assume no face found
+    if (!IsStasmInitialized(context)) {
+        return StasmResult::NOT_INITIALIZED;
+    }
+    if (context.img_g.rows == 0 || context.img_g.cols == 0) {
+        return StasmResult::IMAGE_INVALID;
+    }
+        
     CatchOpenCvErrs();
     try
     {
-        CheckStasmInit(detectors);
-
-        if (detectors.img_g.rows == 0 || detectors.img_g.cols == 0)
-            Err("Image not open (missing call to stasm_open_image?)");
 
         Shape shape;       // the shape with landmarks
         Image face_roi;    // cropped to area around startshape and possibly rotated
@@ -182,8 +192,8 @@ int stasm_search_auto_ext(StasmData& detectors, // extended version of stasm_sea
 
         // Get the start shape for the next face in the image, and the ROI around it.
         // The shape will be wrt the ROI frame.
-        if (NextStartShapeAndRoi(detectors, shape, face_roi, detpar_roi, detpar,
-                                 detectors.img_g, detectors.mods_g, detectors.face_detector))
+        if (NextStartShapeAndRoi(context, shape, face_roi, detpar_roi, detpar,
+                                 context.img_g, context.mods_g, context.face_detector))
         {
             // now working with maybe flipped ROI and start shape in ROI frame
             *foundface = 1;
@@ -192,10 +202,10 @@ int stasm_search_auto_ext(StasmData& detectors, // extended version of stasm_sea
                          "auto_start");
 
             // select an ASM model based on the face's yaw
-            const int imod = ABS(EyawAsModIndex(detpar.eyaw, detectors.mods_g));
+            const int imod = ABS(EyawAsModIndex(detpar.eyaw, context.mods_g));
 
             // do the actual ASM search
-            shape = detectors.mods_g[imod]->ModSearch_(shape, face_roi);
+            shape = context.mods_g[imod]->ModSearch_(shape, face_roi);
 
             shape = RoiShapeToImgFrame(shape, face_roi, detpar_roi, detpar);
             // now working with non flipped start shape in image frame
@@ -207,20 +217,20 @@ int stasm_search_auto_ext(StasmData& detectors, // extended version of stasm_sea
     }
     catch(...)
     {
-        returnval = 0; // a call was made to Err or a CV_Assert failed
+        returnval = StasmResult::UNDEFINED; // a call was made to Err or a CV_Assert failed
     }
     UncatchOpenCvErrs();
     return returnval;
 }
 
-int stasm_search_auto(StasmData& detectors, // call repeatedly to find all faces
+StasmResult::Type stasm_search_auto(StasmData& detectors, // call repeatedly to find all faces
     int*   foundface,  // out: 0=no more faces, 1=found face
     float* landmarks)  // out: x0, y0, x1, y1, ..., caller must allocate
 {
     return stasm_search_auto_ext(detectors, foundface, landmarks, NULL);
 }
 
-int stasm_search_single(StasmData& detectors,   // wrapper for stasm_search_auto and friends
+StasmResult::Type stasm_search_single(StasmData& detectors,   // wrapper for stasm_search_auto and friends
     int*        foundface, // out: 0=no face, 1=found face
     float*      landmarks, // out: x0, y0, x1, y1, ..., caller must allocate
     const char* img,       // in: gray image data, top left corner at 0,0
@@ -229,17 +239,20 @@ int stasm_search_single(StasmData& detectors,   // wrapper for stasm_search_auto
     const char* imgpath,   // in: image path, used only for err msgs and debug
     const char* datadir)   // in: directory of face detector files
 {
-    if (!stasm_init(detectors, datadir, 0 /*trace*/))
-        return false;
+    StasmResult::Type result;
+    if ((result = stasm_init(detectors, datadir)) != StasmResult::SUCCESS) {
+        return result;
+    }
+    if ((result = stasm_open_image(detectors, img, width, height, imgpath,
+                          false, 10 /*minwidth*/))  != StasmResult::SUCCESS) {
+        return result;
+    }
 
-    if (!stasm_open_image(detectors, img, width, height, imgpath,
-                          0 /*multiface*/, 10 /*minwidth*/))
-        return false;
-
-    return stasm_search_auto(detectors, foundface, landmarks);
+    result = stasm_search_auto(detectors, foundface, landmarks);
+    return result;
 }
 
-int stasm_search_pinned( StasmData& detectors,   // call after the user has pinned some points
+StasmResult::Type stasm_search_pinned( StasmData& detectors,   // call after the user has pinned some points
     float*       landmarks, // out: x0, y0, x1, y1, ..., caller must allocate
     const float* pinned,    // in: pinned landmarks (0,0 points not pinned)
     const char*  img,       // in: gray image data, top left corner at 0,0
@@ -247,12 +260,13 @@ int stasm_search_pinned( StasmData& detectors,   // call after the user has pinn
     int          height,    // in: image height
     const char*  imgpath)   // in: image path, used only for err msgs and debug
 {
-    int returnval = 1;     // assume success
+    StasmResult::Type returnval = StasmResult::SUCCESS;     // assume success
+    if (!IsStasmInitialized(detectors))
+        return StasmResult::NOT_INITIALIZED;
     CatchOpenCvErrs();
     try
     {
         CV_Assert(imgpath && STRNLEN(imgpath, SLEN) < SLEN);
-        CheckStasmInit(detectors);
 
         detectors.img_g = Image(height, width, (unsigned char*)img);
 
@@ -282,7 +296,7 @@ int stasm_search_pinned( StasmData& detectors,   // call after the user has pinn
     }
     catch(...)
     {
-        returnval = 0; // a call was made to Err or a CV_Assert failed
+        returnval = StasmResult::UNDEFINED; // a call was made to Err or a CV_Assert failed
     }
     UncatchOpenCvErrs();
     return returnval;

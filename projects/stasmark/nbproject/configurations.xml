@@ -115,19 +115,11 @@
           <developmentMode>5</developmentMode>
         </asmTool>
         <linkerTool>
+          <linkerAddLib>
+            <pElem>../stasm4/${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}</pElem>
+          </linkerAddLib>
           <linkerLibItems>
-            <linkerLibProjectItem>
-              <makeArtifact PL="../stasm4"
-                            CT="2"
-                            CN="Release"
-                            AC="true"
-                            BL="true"
-                            WD="../stasm4"
-                            BC="${MAKE}  -f Makefile CONF=Release"
-                            CC="${MAKE}  -f Makefile CONF=Release clean"
-                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libstasm4.${CND_DLIB_EXT}">
-              </makeArtifact>
-            </linkerLibProjectItem>
+            <linkerLibLibItem>stasm4</linkerLibLibItem>
             <linkerLibLibItem>opencv_core</linkerLibLibItem>
             <linkerLibLibItem>opencv_highgui</linkerLibLibItem>
             <linkerLibLibItem>opencv_imgproc</linkerLibLibItem>

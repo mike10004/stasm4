@@ -58,13 +58,11 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-Wl,-rpath,../stasm4/dist/Release/GNU-Linux-x86 -L../stasm4/dist/Release/GNU-Linux-x86 -lstasm4 -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_objdetect
+LDLIBSOPTIONS=-L../stasm4/${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM} -lstasm4 -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_objdetect
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
 	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/stasmark
-
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/stasmark: ../stasm4/dist/Release/GNU-Linux-x86/libstasm4.so
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/stasmark: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
@@ -77,7 +75,6 @@ ${OBJECTDIR}/stasm_main.o: stasm_main.cc
 
 # Subprojects
 .build-subprojects:
-	cd ../stasm4 && ${MAKE}  -f Makefile CONF=Release
 
 # Build Test Targets
 .build-tests-conf: .build-conf ${TESTFILES}
@@ -127,7 +124,6 @@ ${OBJECTDIR}/stasm_main_nomain.o: ${OBJECTDIR}/stasm_main.o stasm_main.cc
 
 # Subprojects
 .clean-subprojects:
-	cd ../stasm4 && ${MAKE}  -f Makefile CONF=Release clean
 
 # Enable dependency checking
 .dep.inc: .depcheck-impl

@@ -35,7 +35,7 @@ static void RotShapeInPlace(
     CV_Assert(rot >= -360 && rot <= 360); // sanity check, 360 is arb
 
     const MAT rotmat =
-        getRotationMatrix2D(cv::Point2f(float(x), float(y)), rot, 1.);
+        cv::getRotationMatrix2D(cv::Point2f(float(x), float(y)), rot, 1.);
 
     AlignShapeInPlace(shape, rotmat);
 }

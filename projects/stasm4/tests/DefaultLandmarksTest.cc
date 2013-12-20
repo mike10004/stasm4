@@ -12,6 +12,7 @@
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
+#include "../../../stasm/misc.h"
 
 using namespace std;
 using namespace stasm;
@@ -58,11 +59,11 @@ static bool detect_landmarks(bool multi, int minwidth, const char* image_pathnam
     }
     StasmData stasm_data;
     const int trace = 0;
-    if (!stasm_init(stasm_data, StasmUtils::GetModelsDataDir(), trace)) {
+    if (stasm_init(stasm_data, StasmUtils::GetModelsDataDir()) != StasmResult::SUCCESS) {
         cerr << "stasm_init failed: " << stasm_lasterr() << endl;
         return false;
     }
-    if (!stasm_open_image(stasm_data, (const char*)img.data, img.cols, img.rows, image_pathname, multi, minwidth)) {
+    if (stasm_open_image(stasm_data, (const char*)img.data, img.cols, img.rows, image_pathname, multi, minwidth) != StasmResult::SUCCESS) {
         cerr << "stasm_open_image failed: " << stasm_lasterr() << endl;
     }
     // Test stasm_search_auto.

@@ -81,6 +81,22 @@ namespace stasm
     class Mod;
     typedef vector<const Mod*> vec_Mod; // vector of ASM models, one for each yaw range
     
+    class StasmResult
+    {
+    public:
+        enum Type 
+        {
+            UNDEFINED,
+            SUCCESS,
+            NOT_INITIALIZED,
+            IMAGE_INVALID,
+            INITIALIZATION_FAILED
+        };
+        
+    private:
+        StasmResult() {}
+    };
+    
     class StasmData
     {
     public:
@@ -112,26 +128,26 @@ using stasm::StasmData;
 extern const char* const stasm_VERSION;
 
 extern "C"
-int stasm_init(StasmData& detectors,              // call once, at bootup
-    const char*  datadir,    // in: directory of face detector files
-    int          trace);     // in: 0 normal use, 1 trace to stdout and stasm.log
+stasm::StasmResult::Type stasm_init(StasmData& detectors,              // call once, at bootup
+    const char*  datadir    // in: directory of face detector files
+    );    // MC removed trace argument // in: 0 normal use, 1 trace to stdout and stasm.log
 
 extern "C"
-int stasm_open_image(StasmData& detectors,        // call once per image, detect faces
+stasm::StasmResult::Type stasm_open_image(StasmData& detectors,        // call once per image, detect faces
     const char*  img,        // in: gray image data, top left corner at 0,0
     int          width,      // in: image width
     int          height,     // in: image height
     const char*  imgpath,    // in: image path, used only for err msgs and debug
-    int          multiface,  // in: 0=return only one face, 1=allow multiple faces
+    bool          multiface,  // in: 0=return only one face, 1=allow multiple faces
     int          minwidth);  // in: min face width as percentage of img width
 
 extern "C"
-int stasm_search_auto( StasmData& detectors,      // call repeatedly to find all faces
+stasm::StasmResult::Type stasm_search_auto( StasmData& detectors,      // call repeatedly to find all faces
     int*         foundface,  // out: 0=no more faces, 1=found face
     float*       landmarks); // out: x0, y0, x1, y1, ..., caller must allocate
 
 extern "C"
-int stasm_search_single(StasmData& detectors,       // wrapper for stasm_search_auto and friends
+stasm::StasmResult::Type stasm_search_single(StasmData& detectors,       // wrapper for stasm_search_auto and friends
     int*         foundface,  // out: 0=no face, 1=found face
     float*       landmarks,  // out: x0, y0, x1, y1, ..., caller must allocate
     const char*  img,        // in: gray image data, top left corner at 0,0
@@ -141,7 +157,7 @@ int stasm_search_single(StasmData& detectors,       // wrapper for stasm_search_
     const char*  datadir);   // in: directory of face detector files
 
 extern "C"                   // find landmarks, no OpenCV face detect
-int stasm_search_pinned(     // call after the user has pinned some points
+stasm::StasmResult::Type stasm_search_pinned(     // call after the user has pinned some points
     float*       landmarks,  // out: x0, y0, x1, y1, ..., caller must allocate
     const float* pinned,     // in: pinned landmarks (0,0 points not pinned)
     const char*  img,        // in: gray image data, top left corner at 0,0

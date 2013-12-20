@@ -16,3 +16,5 @@
 private/
 /.dep.inc
 
+/projects/stasmark/build/
+/projects/stasmark/dist/

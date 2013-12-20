@@ -87,8 +87,25 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
     </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+      <logicalFolder name="f1"
+                     displayName="landmarks_default"
+                     projectFiles="true"
+                     kind="TEST">
+      </logicalFolder>
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
   </logicalFolder>
   <sourceRootList>
+    <Elem>../../stasm</Elem>
     <Elem>../../stasm</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
@@ -107,6 +124,7 @@
             <linkerLibLibItem>opencv_imgproc</linkerLibLibItem>
             <linkerLibLibItem>opencv_objdetect</linkerLibLibItem>
           </linkerLibItems>
+          <commandLine>-Wl,-soname,libstasm4.so.0</commandLine>
         </linkerTool>
       </compileType>
       <item path="../../stasm/MOD_1/facedet.cpp" ex="false" tool="1" flavor2="0">
@@ -253,6 +271,7 @@
             <linkerLibLibItem>opencv_imgproc</linkerLibLibItem>
             <linkerLibLibItem>opencv_objdetect</linkerLibLibItem>
           </linkerLibItems>
+          <commandLine>-Wl,-soname,libstasm4.so.0</commandLine>
         </linkerTool>
       </compileType>
       <item path="../../stasm/MOD_1/facedet.cpp" ex="false" tool="1" flavor2="0">

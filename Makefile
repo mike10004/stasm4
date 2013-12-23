@@ -6,6 +6,7 @@ MARKBIN_PROJ_ROOT := projects/stasmark
 DESTDIR ?= $(PROJ_ROOT)/dist/install
 LIBDIR := $(DESTDIR)/usr/lib/$(DEB_HOST_MULTIARCH)
 BINDIR := $(DESTDIR)/usr/bin
+MANDIR := $(DESTDIR)/usr/share/man/man1
 CONF := Release
 include $(PROJ_ROOT)/nbproject/Makefile-variables.mk
 INSTALL := $(shell which install)
@@ -56,7 +57,11 @@ install-markbin: build-markbin
 	$(MKDIR) -p $(BINDIR)
 	$(INSTALL) -t $(BINDIR) $(MARKBIN_PROJ_ROOT)/dist/Release/GNU-Linux-x86/stasmark
 
+install-man:
+	$(MKDIR) -p $(MANDIR)
+	$(INSTALL) -t $(MANDIR) -m 0644 doc/stasmark.1
+
 install-bins: install-markbin
 
-install: all install-shlibs install-stlibs install-bins install-headers
+install: all install-shlibs install-stlibs install-bins install-man install-headers
 	

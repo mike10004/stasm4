@@ -27,11 +27,13 @@ build-markbin:
 	
 clean-libs:	
 	"$(MAKE)" -C $(PROJ_ROOT) CONF=$(CONF) clean
+	$(RM) -rf $(PROJ_ROOT)/dist $(PROJ_ROOT)/build
 
 clean-bins: clean-markbin
 
 clean-markbin:
 	"$(MAKE)" -C $(MARKBIN_PROJ_ROOT) CONF=$(CONF) clean
+	$(RM) -rf $(MARKBIN_PROJ_ROOT)/dist $(MARKBIN_PROJ_ROOT)/build
 
 clean: clean-libs clean-bins
 	rm -fr $(CURDIR)/nbproject
@@ -45,7 +47,7 @@ install-headers:
 install-shlibs: build-libs
 	$(MKDIR) -p $(LIBDIR)
 #	$(INSTALL) -t $(LIBDIR) -m 0644 $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.so
-	cp $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.so $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.so.0
+	mv $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.so $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.so.0
 	$(INSTALL) -t $(LIBDIR) -m 0644 $(PROJ_ROOT)/$(CND_ARTIFACT_DIR_Release)/libstasm4.so.0
 	ln -s libstasm4.so.0 $(LIBDIR)/libstasm4.so
 

@@ -1,4 +1,4 @@
-stasm4 (4.0.0-1) unstable; urgency=low
+libstasm4 (4.0.0-1) unstable; urgency=low
 
   * Initial release (Closes: #1)
   * removed doc/LICENSE.txt because it's a duplicate of LICENSE in root
@@ -25,4 +25,16 @@ stasm4 (4.0.0-1) unstable; urgency=low
   * added root makefile that defers to netbeans project makefile
   * added copyright notice regarding modifications to original sources
 
- -- Michael Chaberski <mchaberski+dev@gmail.com>  Thu, 19 Dec 2013 13:51:28 -0500
+ -- Michael Chaberski <mchaberski+dev@gmail.com>  Mon, 23 Dec 2013 12:09:46 -0500
+
+libstasm4-dev (4.0.0-1) unstable; urgency=low
+
+  * Initial release of development files (Closes: #2)
+
+ -- Michael Chaberski <mchaberski+dev@gmail.com>  Mon, 23 Dec 2013 12:09:45 -0500
+
+stasm4-utils (4.0.0-1) unstable; urgency=low
+
+  * Initial release of executables (Closes: #3)
+
+ -- Michael Chaberski <mchaberski+dev@gmail.com>  Mon, 23 Dec 2013 12:09:44 -0500

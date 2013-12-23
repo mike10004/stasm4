@@ -1,4 +1,4 @@
-Source: stasm4
+Source: libstasm4
 Priority: optional
 Maintainer: Michael Chaberski <mchaberski+dev@gmail.com>
 Build-Depends: debhelper (>= 9), libopencv-imgproc-dev (>= 2.4), libopencv-objdetect-dev (>= 2.4)

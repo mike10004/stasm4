@@ -74,6 +74,11 @@ static bool detect_landmarks(bool multi, int minwidth, const char* image_pathnam
 
 const int ERR_USAGE = 1, ERR_STASM = 2, ERR_NO_FACES = 3;
 
+void print_version(ostream& out)
+{
+    out << "Stasmark 0.1.0" << endl;
+}
+
 void print_usage(ostream& out)
 {
     out << 
@@ -94,31 +99,58 @@ void print_usage(ostream& out)
 "    3    no faces detected" << endl; 
 }
 
-int parse_args(int argc, char** argv, int* min_width, bool* multi, int* first_positional_index, bool* help)
+struct stasm_options
+{
+    int min_width;
+    bool multi;
+    int first_positional_index;
+    bool help;
+    bool version;
+    stasm_options() : min_width(25), multi(true), first_positional_index(-1), help(false), version(false) {}
+};
+
+int parse_args(int argc, char** argv, stasm_options& options)
 {
        int c;
-       *multi = true;
-       *min_width = 25;
        opterr = 0;
-       *help = false;
-       while ((c = getopt (argc, argv, "w:sh")) != -1)
-         switch (c)
-           {
+       optind = 0;
+       while (true) {
+           static struct option long_options[] =
+             {
+               /* These options don't set a flag.
+                  We distinguish them by their indices. */
+               {"single",  no_argument,       0, 's'},
+               {"min-width",  required_argument, 0, 'w'},
+               {"version",  no_argument, 0, 'V'},
+               {"help",    no_argument, 0, 'h'},
+               {0, 0, 0, 0}
+             };
+           /* getopt_long stores the option index here. */
+           int option_index = 0;
+     
+           c = getopt_long (argc, argv, "sw:Vh", long_options, &option_index);
+           if (c == -1) {
+               break;
+           }
+         switch (c) {
+             case 'V':
+                 options.version = true;
+                 return EXIT_SUCCESS;
              case 'h':
-                 *help = true;
+                 options.help = true;
                  return EXIT_SUCCESS;
            case 's':
-             *multi = false;
+             options.multi = false;
              break;
            case 'w': {
              const char* min_width_str = optarg;
-             int num_valid = sscanf(min_width_str, "%d", min_width);
+             int num_valid = sscanf(min_width_str, "%d", &options.min_width);
              if ((num_valid != 1)) {
                  cerr << "stasmark: invalid argument: min width = " << min_width_str << endl;
                  return ERR_USAGE;
              }
-             if ((*min_width < 1) || (*min_width > 100)) {
-                 cerr << "stasmark: minimum width must be integer in range [1, 100], not " << min_width << endl;
+             if ((options.min_width < 1) || (options.min_width > 100)) {
+                 cerr << "stasmark: minimum width must be integer in range [1, 100], not " << options.min_width << endl;
                  return ERR_USAGE;
              }
              break;
@@ -126,14 +158,14 @@ int parse_args(int argc, char** argv, int* min_width, bool* multi, int* first_po
              if (optopt == 'w')
                cerr << "stasmark: Option -w requires an argument." << endl;
              else
-               cerr << "stasmark: Unknown option character" << endl;
+               cerr << "stasmark: Unknown option character " << ((int) optopt) << endl;
              return ERR_USAGE;
            default:
                cerr << "stasmark: unhandled usage error" << endl;
-               return ERR_USAGE;
+               break;
            }
-     
-       *first_positional_index = optind;
+       }
+       options.first_positional_index = optind;
        if (argc != (optind + 1)) {
            cerr << "stasmark: must specify exactly one image pathname argument" << endl;
            return ERR_USAGE;
@@ -143,19 +175,22 @@ int parse_args(int argc, char** argv, int* min_width, bool* multi, int* first_po
 
 int stasm_main(int argc, char** argv, ostream& out)
 {
-    bool help = false, multi = true;
-    int min_width = 25, first_positional_index = -1;
-    int parse_result = parse_args(argc, argv, &min_width, &multi, &first_positional_index, &help);
+    stasm_options options;
+    int parse_result = parse_args(argc, argv, options);
     if (parse_result == ERR_USAGE) {
         print_usage(cerr);
         return ERR_USAGE;
     }
-    if (help) {
+    if (options.help) {
         print_usage(out);
         return EXIT_SUCCESS;
     }
+    if (options.version) {
+        print_version(out);
+        return EXIT_SUCCESS;
+    }
     int num_faces = 0;
-    bool ok = detect_landmarks(multi, min_width, argv[first_positional_index], out, &num_faces);
+    bool ok = detect_landmarks(options.multi, options.min_width, argv[options.first_positional_index], out, &num_faces);
     if (!ok) {
         return ERR_STASM;
     }

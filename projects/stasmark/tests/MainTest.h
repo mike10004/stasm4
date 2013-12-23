@@ -13,12 +13,13 @@
 class MainTest : public CPPUNIT_NS::TestFixture {
     CPPUNIT_TEST_SUITE(MainTest);
 
-    CPPUNIT_TEST(testHelp);
-    CPPUNIT_TEST(testBadMinWidthArg1);
-    CPPUNIT_TEST(testBadMinWidthArg2);
-    CPPUNIT_TEST(testUnrecognizedOption);
+//    CPPUNIT_TEST(testHelp);
+//    CPPUNIT_TEST(testVersion);
+//    CPPUNIT_TEST(testBadMinWidthArg1);
+//    CPPUNIT_TEST(testBadMinWidthArg2);
+//    CPPUNIT_TEST(testUnrecognizedOption);
+//    CPPUNIT_TEST(testNoFaces);
     CPPUNIT_TEST(testNormal_MultiFaceImage_MultiFaceDetection);
-    CPPUNIT_TEST(testNoFaces);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -30,6 +31,7 @@ public:
 
 private:
     void testHelp();
+    void testVersion();
     void testBadMinWidthArg1();
     void testBadMinWidthArg2();
     void testUnrecognizedOption();

@@ -32,7 +32,26 @@ void MainTest::tearDown() {
 
 void MainTest::testHelp() 
 { 
-    CPPUNIT_ASSERT(true); 
+    char* argv[] = {
+        (char*) "stasmark",
+        (char*) "--help"
+    };
+    int argc = 2;
+    int exit_code = stasm_main(argc, argv, cerr);
+    cerr << "--help exited with code " << exit_code << endl;
+    CPPUNIT_ASSERT(exit_code == EXIT_SUCCESS);   
+}
+
+void MainTest::testVersion() 
+{ 
+    char* argv[] = {
+        (char*) "stasmark",
+        (char*) "--version"
+    };
+    int argc = 2;
+    int exit_code = stasm_main(argc, argv, cerr);
+    cerr << "--version exited with code " << exit_code << endl;
+    CPPUNIT_ASSERT(exit_code == EXIT_SUCCESS);
 }
 
 void MainTest::testBadMinWidthArg1() 
@@ -59,6 +78,7 @@ void MainTest::testNormal_SingleFaceImage_MultiFaceDetection()
     };
     int argc = 2;
     int exit_code = stasm_main(argc, argv, cerr);
+    cerr << "testNormal_SingleFaceImage_MultiFaceDetection exit code " << exit_code << endl;
     CPPUNIT_ASSERT(exit_code == EXIT_SUCCESS);
 }
 
@@ -72,6 +92,7 @@ void MainTest::testNormal_SingleFaceImage_SingleFaceDetection()
     };
     int argc = 3;
     int exit_code = stasm_main(argc, argv, cerr);
+    cerr << "testNormal_SingleFaceImage_SingleFaceDetection exit code " << exit_code << endl;
     CPPUNIT_ASSERT(exit_code == EXIT_SUCCESS);
 }
 
@@ -86,6 +107,7 @@ void MainTest::testNormal_MultiFaceImage_SingleFaceDetection()
     };
     int argc = 3;
     int exit_code = stasm_main(argc, argv, cerr);
+    cerr << "testNormal_MultiFaceImage_SingleFaceDetection exit code " << exit_code << endl;
     CPPUNIT_ASSERT(exit_code == EXIT_SUCCESS);
 }
 
@@ -98,6 +120,7 @@ void MainTest::testNormal_MultiFaceImage_MultiFaceDetection()
     };
     int argc = 2;
     int exit_code = stasm_main(argc, argv, cerr);
+    cerr << "testNormal_MultiFaceImage_MultiFaceDetection exit code " << exit_code << endl;
     CPPUNIT_ASSERT(exit_code == EXIT_SUCCESS);
 }
 

@@ -271,7 +271,7 @@
             <linkerLibLibItem>opencv_imgproc</linkerLibLibItem>
             <linkerLibLibItem>opencv_objdetect</linkerLibLibItem>
           </linkerLibItems>
-          <commandLine>-Wl,-soname,libstasm4.so</commandLine>
+          <commandLine>-Wl,-soname,libstasm4.so.0</commandLine>
         </linkerTool>
       </compileType>
       <item path="../../stasm/MOD_1/facedet.cpp" ex="false" tool="1" flavor2="0">

@@ -11,7 +11,7 @@ include $(PROJ_ROOT)/nbproject/Makefile-variables.mk
 INSTALL := $(shell which install)
 MKDIR := mkdir
 RM := rm
-HEADERS_DEST_DIR := $(DESTDIR)/usr/include/stasm4
+HEADERS_DEST_DIR := $(DESTDIR)/usr/include
 HERE := $(CURDIR)
 
 all: build
@@ -38,8 +38,8 @@ clean: clean-libs clean-bins
 install-headers:
 	$(MKDIR) -p $(HEADERS_DEST_DIR)
 	$(MKDIR) -p $(HEADERS_DEST_DIR)/MOD_1
-	$(INSTALL) -t $(HEADERS_DEST_DIR) -m 0644 $(HERE)/stasm/*.h
-	$(INSTALL) -t $(HEADERS_DEST_DIR)/MOD_1 -m 0644 $(HERE)/stasm/MOD_1/*.h
+	find stasm -type f -name "*.*h" -print0 | \
+		xargs -0 cp --target $(HEADERS_DEST_DIR) --parents
 	
 install-shlibs: build-libs
 	$(MKDIR) -p $(LIBDIR)

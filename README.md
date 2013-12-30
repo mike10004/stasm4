@@ -8,7 +8,7 @@ From the upstream website:
 it an image of a face and it returns the positions of the facial features. 
 Stasm is designed to work on front views of faces with neutral expressions.
 
-Please see doc/HISTORY.txt and http://www.milbo.users.sonic.net/stasm for 
+Please see `doc/HISTORY.txt` and http://www.milbo.users.sonic.net/stasm for 
 further details on upstream sources.
 
 The motivation for this fork is 
